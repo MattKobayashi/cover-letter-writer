@@ -1,3 +1,11 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "pypdf2==3.0.1",
+#     "requests==2.32.3",
+# ]
+# ///
+
 import argparse
 import os
 import sys
