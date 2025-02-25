@@ -45,6 +45,17 @@ args = parser.parse_args()
 
 # Add PDF text extraction function
 def extract_pdf_text(file_path):
+    """Extracts text content from a PDF file.
+
+    Args:
+        file_path (str): Path to PDF file to extract text from
+
+    Returns:
+        str: Concatenated text from all PDF pages as a single string
+
+    Raises:
+        SystemExit: If file is not found, inaccessible, or unreadable
+    """
     try:
         with open(file_path, 'rb') as f:
             pdf = PdfReader(f)
@@ -59,6 +70,19 @@ def extract_pdf_text(file_path):
 
 # Add API request function
 def generate_coverletter(api_key, model, prompt):
+    """Generates cover letter content using OpenRouter API.
+
+    Args:
+        api_key (str): OpenRouter API key (optional if env var set)
+        model (str): Model name from OpenRouter's model catalog
+        prompt (str): Complete prompt for LLM to generate cover letter
+
+    Returns:
+        str: Generated cover letter content from successful API response
+
+    Raises:
+        SystemExit: For API errors, missing key, or unexpected response format
+    """
     headers = {
         'Authorization': f'Bearer {api_key or os.getenv("OPENROUTER_API_KEY")}',
         'Content-Type': 'application/json'
