@@ -15,7 +15,7 @@
 ## Usage
 
 ```shell
-usage: generate_cover_letter.py [-h] [--model MODEL] [--lang LANG] [--api-key API_KEY] resume job_pdf
+usage: generate.py [-h] [--model MODEL] [--lang LANG] [--api-key API_KEY] resume job_pdf
 
 Generate cover letter using LLM
 
