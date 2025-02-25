@@ -1,7 +1,7 @@
 import argparse
+import os
 from PyPDF2 import PdfReader
 import requests
-import os
 
 # Add argument parsing
 parser = argparse.ArgumentParser(description='Generate cover letter using LLM')
@@ -12,11 +12,13 @@ parser.add_argument('--lang', default='Australian English', help='Language for c
 parser.add_argument('--api-key', help='OpenRouter API key (or use OPENROUTER_API_KEY env var)')
 args = parser.parse_args()
 
+
 # Add PDF text extraction function
 def extract_pdf_text(file_path):
     with open(file_path, 'rb') as f:
         pdf = PdfReader(f)
         return "\n".join([page.extract_text() for page in pdf.pages])
+
 
 # Add API request function
 def generate_coverletter(api_key, model, prompt):
@@ -33,6 +35,7 @@ def generate_coverletter(api_key, model, prompt):
         headers=headers
     )
     return response.json()['choices'][0]['message']['content']
+
 
 # Main execution
 if __name__ == "__main__":
