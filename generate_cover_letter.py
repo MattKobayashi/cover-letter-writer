@@ -7,7 +7,7 @@ import requests
 parser = argparse.ArgumentParser(description='Generate cover letter using LLM')
 parser.add_argument('resume', help='Path to resume PDF file')
 parser.add_argument('job_pdf', help='Path to job advertisement PDF')
-parser.add_argument('--model', default='gpt-4', help='OpenRouter model name')
+parser.add_argument('--model', default='mistralai/mistral-large-2411', help='OpenRouter model name')
 parser.add_argument('--lang', default='Australian English', help='Language for cover letter')
 parser.add_argument('--api-key', help='OpenRouter API key (or use OPENROUTER_API_KEY env var)')
 args = parser.parse_args()
