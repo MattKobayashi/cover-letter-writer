@@ -26,6 +26,7 @@ def generate_coverletter(api_key, model, prompt):
         'Authorization': f'Bearer {api_key or os.getenv("OPENROUTER_API_KEY")}',
         'Content-Type': 'application/json'
     }
+    print("Waiting for LLM response...")
     response = requests.post(
         'https://openrouter.ai/api/v1/chat/completions',
         json={
@@ -34,11 +35,13 @@ def generate_coverletter(api_key, model, prompt):
         },
         headers=headers
     )
+    print("LLM response received.\n")
     return response.json()['choices'][0]['message']['content']
 
 
 # Main execution
 if __name__ == "__main__":
+    print("Extracting text from PDF files...")
     resume_text = extract_pdf_text(args.resume)
     job_text = extract_pdf_text(args.job_pdf)
 
@@ -50,4 +53,5 @@ And this job advertisement:
 
 Focus on matching key skills and experience. Use professional tone."""
 
+    print(f"\nGenerating cover letter in {args.lang} using model: {args.model}...")
     print(generate_coverletter(args.api_key, args.model, prompt))
