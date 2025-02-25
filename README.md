@@ -3,14 +3,12 @@
 ## Setup
 
 1. Get an API key from your [OpenRouter](https://openrouter.ai/settings/keys) account.
-2. Install [Poetry](https://python-poetry.org/docs/#installation). On macOS, installing via [Homebrew](https://formulae.brew.sh/formula/poetry#default) is easiest.
-3. Install the project:
+2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/#homebrew).
+3. Run the script with your preferred options:
 
-   ```shell
-   poetry install
-   ```
-
-4. Run the script with your preferred options.
+```shell
+uv run generate.py <resume PDF> <job PDF> --api-key <API key>
+```
 
 ## Usage
 
