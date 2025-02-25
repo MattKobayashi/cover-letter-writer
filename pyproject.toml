@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "cover-letter-writer"
+version = "0.1.0"
+description = "A Python script for writing a cover letter using an LLM"
+authors = ["MattKobayashi <matthew@kobayashi.au>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "~=3.13.0"
+PyPDF2 = "3.0.1"
+requests = "2.32.3"
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core==2.0.1"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+target-version = ['py311']
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
