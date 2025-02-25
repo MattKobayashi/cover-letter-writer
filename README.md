@@ -3,7 +3,7 @@
 ## How to use
 
 1. Get an API key from your [OpenRouter](https://openrouter.ai/settings/keys) account.
-2. Install [Poetry](https://python-poetry.org/docs/#installation).
+2. Install [Poetry](https://python-poetry.org/docs/#installation). On macOS, installing via [Homebrew](https://formulae.brew.sh/formula/poetry#default) is easiest.
 3. Install the project:
 
    ```shell
