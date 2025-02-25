@@ -1,4 +1,3 @@
 .aider*
 .DS_Store
 .gitignore
-poetry.lock
