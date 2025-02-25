@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 from PyPDF2 import PdfReader
 import requests
 
@@ -15,9 +16,16 @@ args = parser.parse_args()
 
 # Add PDF text extraction function
 def extract_pdf_text(file_path):
-    with open(file_path, 'rb') as f:
-        pdf = PdfReader(f)
-        return "\n".join([page.extract_text() for page in pdf.pages])
+    try:
+        with open(file_path, 'rb') as f:
+            pdf = PdfReader(f)
+            return "\n".join([page.extract_text() for page in pdf.pages])
+    except FileNotFoundError:
+        sys.exit(f"Error: File {file_path} not found")
+    except PermissionError:
+        sys.exit(f"Error: No permission to read {file_path}")
+    except Exception as e:
+        sys.exit(f"Error reading {file_path}: {str(e)}")
 
 
 # Add API request function
@@ -26,26 +34,45 @@ def generate_coverletter(api_key, model, prompt):
         'Authorization': f'Bearer {api_key or os.getenv("OPENROUTER_API_KEY")}',
         'Content-Type': 'application/json'
     }
-    print("Waiting for LLM response...")
-    response = requests.post(
-        'https://openrouter.ai/api/v1/chat/completions',
-        json={
-            'model': model,
-            'messages': [{'role': 'user', 'content': prompt}]
-        },
-        headers=headers
-    )
-    print("LLM response received.\n")
-    return response.json()['choices'][0]['message']['content']
+    
+    if not headers['Authorization'].split()[-1]:
+        sys.exit("Error: Missing API key. Use --api-key or set OPENROUTER_API_KEY")
+
+    try:
+        print("Waiting for LLM response...")
+        response = requests.post(
+            'https://openrouter.ai/api/v1/chat/completions',
+            json={'model': model, 'messages': [{'role': 'user', 'content': prompt}]},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        sys.exit(f"API request failed: {str(e)}")
+    
+    try:
+        result = response.json()
+        print("LLM response received.\n")
+        return result['choices'][0]['message']['content']
+    except KeyError:
+        sys.exit("Unexpected API response format")
+    except Exception as e:
+        sys.exit(f"Error processing response: {str(e)}")
 
 
 # Main execution
 if __name__ == "__main__":
-    print("Extracting text from PDF files...")
-    resume_text = extract_pdf_text(args.resume)
-    job_text = extract_pdf_text(args.job_pdf)
+    # Validate input files exist
+    for f in [args.resume, args.job_pdf]:
+        if not os.path.exists(f):
+            sys.exit(f"Input file not found: {f}")
 
-    prompt = f"""Write a {args.lang} cover letter using this resume:
+    try:
+        print("Extracting text from PDF files...")
+        resume_text = extract_pdf_text(args.resume)
+        job_text = extract_pdf_text(args.job_pdf)
+
+        prompt = f"""Write a {args.lang} cover letter using this resume:
 {resume_text}
 
 And this job advertisement:
@@ -53,5 +80,7 @@ And this job advertisement:
 
 Focus on matching key skills and experience. Use professional tone."""
 
-    print(f"\nGenerating cover letter in {args.lang} using model: {args.model}...")
-    print(generate_coverletter(args.api_key, args.model, prompt))
+        print(f"\nGenerating cover letter in {args.lang} using model: {args.model}...")
+        print(generate_coverletter(args.api_key, args.model, prompt))
+    except Exception as e:
+        sys.exit(f"Unexpected error: {str(e)}")
