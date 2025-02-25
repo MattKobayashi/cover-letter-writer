@@ -34,7 +34,7 @@ def generate_coverletter(api_key, model, prompt):
         'Authorization': f'Bearer {api_key or os.getenv("OPENROUTER_API_KEY")}',
         'Content-Type': 'application/json'
     }
-    
+
     if not headers['Authorization'].split()[-1]:
         sys.exit("Error: Missing API key. Use --api-key or set OPENROUTER_API_KEY")
 
@@ -49,7 +49,7 @@ def generate_coverletter(api_key, model, prompt):
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         sys.exit(f"API request failed: {str(e)}")
-    
+
     try:
         result = response.json()
         print("LLM response received.\n")
