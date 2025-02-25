@@ -5,12 +5,33 @@ from PyPDF2 import PdfReader
 import requests
 
 # Add argument parsing
-parser = argparse.ArgumentParser(description='Generate cover letter using LLM')
-parser.add_argument('resume', help='Path to resume PDF file')
-parser.add_argument('job_pdf', help='Path to job advertisement PDF')
-parser.add_argument('--model', default='mistralai/mistral-large-2411', help='OpenRouter model name')
-parser.add_argument('--lang', default='Australian English', help='Language for cover letter')
-parser.add_argument('--api-key', help='OpenRouter API key (or use OPENROUTER_API_KEY env var)')
+parser = argparse.ArgumentParser(
+    description='Generate a cover letter with the help of a LLM'
+)
+parser.add_argument(
+    'resume',
+    help='Path to resume in PDF format',
+    required=True
+)
+parser.add_argument(
+    'job_pdf',
+    help='Path to job advertisement in PDF format',
+    required=True
+)
+parser.add_argument(
+    '--model',
+    default='mistralai/mistral-large-2411',
+    help='OpenRouter model name'
+)
+parser.add_argument(
+    '--lang',
+    default='Australian English',
+    help='Language for cover letter'
+)
+parser.add_argument(
+    '--api-key',
+    help='OpenRouter API key (or use OPENROUTER_API_KEY env var)'
+)
 args = parser.parse_args()
 
 
@@ -36,13 +57,18 @@ def generate_coverletter(api_key, model, prompt):
     }
 
     if not headers['Authorization'].split()[-1]:
-        sys.exit("Error: Missing API key. Use --api-key or set OPENROUTER_API_KEY")
+        sys.exit(
+            "Error: Missing API key. Use --api-key or set OPENROUTER_API_KEY"
+        )
 
     try:
         print("Waiting for LLM response...")
         response = requests.post(
             'https://openrouter.ai/api/v1/chat/completions',
-            json={'model': model, 'messages': [{'role': 'user', 'content': prompt}]},
+            json={
+                'model': model,
+                'messages': [{'role': 'user', 'content': prompt}]
+            },
             headers=headers,
             timeout=30
         )
@@ -80,7 +106,10 @@ And this job advertisement:
 
 Focus on matching key skills and experience. Use professional tone."""
 
-        print(f"\nGenerating cover letter in {args.lang} using model: {args.model}...")
+        print(
+            f"\nGenerating cover letter in {args.lang}",
+            "using model: {args.model}..."
+        )
         print(generate_coverletter(args.api_key, args.model, prompt))
     except Exception as e:
         sys.exit(f"Unexpected error: {str(e)}")
