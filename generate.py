@@ -18,13 +18,11 @@ parser = argparse.ArgumentParser(
 )
 parser.add_argument(
     'resume',
-    help='Path to resume in PDF format',
-    required=True
+    help='Path to resume in PDF format'
 )
 parser.add_argument(
     'job_pdf',
-    help='Path to job advertisement in PDF format',
-    required=True
+    help='Path to job advertisement in PDF format'
 )
 parser.add_argument(
     '--model',
@@ -140,7 +138,7 @@ Focus on matching key skills and experience. Use professional tone."""
 
         print(
             f"\nGenerating cover letter in {args.lang}",
-            "using model: {args.model}..."
+            f"using model {args.model}"
         )
         print(generate_coverletter(args.api_key, args.model, prompt))
     except Exception as e:
