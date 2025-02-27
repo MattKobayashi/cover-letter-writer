@@ -21,7 +21,7 @@ def read_form():
     <head>
         <meta charset="UTF-8">
         <title>Generate Cover Letter</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <script>
         function disableSubmit() {
             var btn = document.getElementById("submitBtn");
@@ -52,7 +52,7 @@ def read_form():
                 <input type="text" class="form-control" id="lang" name="lang" value="Australian English">
             </div>
             <div class="mb-3">
-                <label for="api_key" class="form-label">API Key</label>
+                <label for="api_key" class="form-label"><a href="https://openrouter.ai/settings/keys" target="_blank">OpenRouter</a> API Key</label>
                 <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Leave blank to use environment variable">
             </div>
             <button type="submit" id="submitBtn" class="btn btn-primary">Generate</button>
