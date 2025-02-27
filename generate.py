@@ -12,33 +12,63 @@ import sys
 from PyPDF2 import PdfReader
 import requests
 
-# Add argument parsing
-parser = argparse.ArgumentParser(
-    description='Generate a cover letter with the help of a LLM'
-)
-parser.add_argument(
-    'resume',
-    help='Path to resume in PDF format'
-)
-parser.add_argument(
-    'job_pdf',
-    help='Path to job advertisement in PDF format'
-)
-parser.add_argument(
-    '--model',
-    default='mistralai/mistral-large-2411',
-    help='OpenRouter model name'
-)
-parser.add_argument(
-    '--lang',
-    default='Australian English',
-    help='Language for cover letter'
-)
-parser.add_argument(
-    '--api-key',
-    help='OpenRouter API key (or use OPENROUTER_API_KEY env var)'
-)
-args = parser.parse_args()
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Generate a cover letter with the help of a LLM'
+    )
+    parser.add_argument(
+        'resume',
+        help='Path to resume in PDF format'
+    )
+    parser.add_argument(
+        'job_pdf',
+        help='Path to job advertisement in PDF format'
+    )
+    parser.add_argument(
+        '--model',
+        default='mistralai/mistral-large-2411',
+        help='OpenRouter model name'
+    )
+    parser.add_argument(
+        '--lang',
+        default='Australian English',
+        help='Language for cover letter'
+    )
+    parser.add_argument(
+        '--api-key',
+        help='OpenRouter API key (or use OPENROUTER_API_KEY env var)'
+    )
+    args = parser.parse_args()
+
+    # Validate input files exist
+    for f in [args.resume, args.job_pdf]:
+        if not os.path.exists(f):
+            sys.exit(f"Input file not found: {f}")
+
+    try:
+        print("Extracting text from PDF files...")
+        resume_text = extract_pdf_text(args.resume)
+        job_text = extract_pdf_text(args.job_pdf)
+
+        prompt = f"""Write a {args.lang} cover letter using this resume:
+{resume_text}
+
+And this job advertisement:
+{job_text}
+
+Focus on matching key skills and experience. Use professional tone."""
+
+        print(
+            f"\nGenerating cover letter in {args.lang} using model {args.model}"
+        )
+        print(generate_coverletter(args.api_key, args.model, prompt))
+    except Exception as e:
+        sys.exit(f"Unexpected error: {str(e)}")
+
+
+if __name__ == "__main__":
+    main()
 
 
 # Add PDF text extraction function
