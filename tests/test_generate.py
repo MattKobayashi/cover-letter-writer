@@ -1,5 +1,4 @@
 import os
-import sys
 import tempfile
 import pytest
 from generate import extract_pdf_text, generate_coverletter

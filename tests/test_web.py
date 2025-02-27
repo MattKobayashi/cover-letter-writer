@@ -1,5 +1,3 @@
-import io
-import pytest
 from fastapi.testclient import TestClient
 from web import app, extract_pdf_text_bytes
 
