@@ -1,7 +1,7 @@
 import io
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from generate import generate_coverletter  # reuse your API call function
 
 app = FastAPI()
