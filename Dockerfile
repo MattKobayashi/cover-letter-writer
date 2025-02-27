@@ -1,5 +1,7 @@
 FROM python:3.13.2-alpine3.21
 
+RUN adduser --disabled-password app
+
 USER app
 WORKDIR /opt/cover-letter-writer
 
