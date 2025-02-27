@@ -5,10 +5,12 @@ from web import app, extract_pdf_text_bytes
 
 client = TestClient(app)
 
+
 # Dummy classes for PdfReader replacement in web.py.
 class DummyPage:
     def extract_text(self):
         return "Page content"
+
 
 class DummyPdf:
     pages = [DummyPage(), DummyPage()]
@@ -34,7 +36,7 @@ def test_generate_endpoint(monkeypatch):
     monkeypatch.setattr("web.generate_coverletter", lambda api_key, model, prompt: "Fake Cover Letter")
     # Also replace PdfReader in extract_pdf_text_bytes.
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
-    
+
     files = {
         "resume": ("resume.pdf", b"dummy resume", "application/pdf"),
         "job_pdf": ("job_pdf.pdf", b"dummy job", "application/pdf"),
