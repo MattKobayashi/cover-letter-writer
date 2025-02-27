@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.0.0...v1.1.0) (2025-02-27)
+
+
+### Features
+
+* Update default model to google/gemini-2.0-flash-001 ([6bacb6d](https://github.com/MattKobayashi/cover-letter-writer/commit/6bacb6de453665a98b166dddbaf50fc277ff8d17))
+
 ## 1.0.0 (2025-02-27)
 
 
