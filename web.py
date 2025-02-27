@@ -33,6 +33,7 @@ def read_form():
     <body>
     <div class="container mt-5">
         <h1>Generate Cover Letter</h1>
+        <p />
         <form action="/generate" method="post" enctype="multipart/form-data" onsubmit="disableSubmit()">
             <div class="mb-3">
                 <label for="resume" class="form-label">Resume (PDF)</label>
@@ -102,6 +103,7 @@ Focus on matching key skills and experience. Use professional tone."""
     <body>
     <div class="container mt-5">
         <h1>Generated Cover Letter</h1>
+        <p />
         <pre class="bg-light p-3">{cover_letter}</pre>
         <a href="/" class="btn btn-secondary mt-3">Generate Another</a>
     </div>
