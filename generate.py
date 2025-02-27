@@ -146,30 +146,3 @@ def generate_coverletter(api_key, model, prompt):
         sys.exit(f"Error processing response: {str(e)}")
 
 
-# Main execution
-if __name__ == "__main__":
-    # Validate input files exist
-    for f in [args.resume, args.job_pdf]:
-        if not os.path.exists(f):
-            sys.exit(f"Input file not found: {f}")
-
-    try:
-        print("Extracting text from PDF files...")
-        resume_text = extract_pdf_text(args.resume)
-        job_text = extract_pdf_text(args.job_pdf)
-
-        prompt = f"""Write a {args.lang} cover letter using this resume:
-{resume_text}
-
-And this job advertisement:
-{job_text}
-
-Focus on matching key skills and experience. Use professional tone."""
-
-        print(
-            f"\nGenerating cover letter in {args.lang}",
-            f"using model {args.model}"
-        )
-        print(generate_coverletter(args.api_key, args.model, prompt))
-    except Exception as e:
-        sys.exit(f"Unexpected error: {str(e)}")
