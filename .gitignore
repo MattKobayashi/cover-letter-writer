@@ -2,3 +2,4 @@
 .DS_Store
 .gitignore
 uv.lock
+__pycache__/
