@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.0.0...v1.1.0) (2025-02-27)
+
+
+### Features
+
+* Add user 'app' in Dockerfile for improved security ([a62328c](https://github.com/MattKobayashi/cover-letter-writer/commit/a62328c2d9c1928a2b15716f4f73a4427e377dcd))
+
 ## 1.0.0 (2025-02-27)
 
 
