@@ -27,7 +27,7 @@ def main():
     )
     parser.add_argument(
         '--model',
-        default='mistralai/mistral-large-2411',
+        default='google/gemini-2.0-flash-001',
         help='OpenRouter model name'
     )
     parser.add_argument(

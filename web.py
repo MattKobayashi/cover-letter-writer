@@ -45,7 +45,7 @@ def read_form():
             </div>
             <div class="mb-3">
                 <label for="model" class="form-label">Model</label>
-                <input type="text" class="form-control" id="model" name="model" value="mistralai/mistral-large-2411">
+                <input type="text" class="form-control" id="model" name="model" value="google/gemini-2.0-flash-001">
             </div>
             <div class="mb-3">
                 <label for="lang" class="form-label">Language</label>
