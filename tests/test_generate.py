@@ -4,13 +4,16 @@ import tempfile
 import pytest
 from generate import extract_pdf_text, generate_coverletter
 
+
 # Dummy classes for PdfReader replacement.
 class DummyPage:
     def extract_text(self):
         return "Dummy Page Text"
 
+
 class DummyPdf:
     pages = [DummyPage(), DummyPage()]
+
 
 # Dummy replacement for requests.post (success case)
 def dummy_requests_post_success(url, json, headers, timeout):
@@ -20,6 +23,7 @@ def dummy_requests_post_success(url, json, headers, timeout):
         def json(self):
             return {"choices": [{"message": {"content": "Test cover letter"}}]}
     return DummyResponse()
+
 
 # Dummy replacement for requests.post (error case)
 def dummy_requests_post_error(url, json, headers, timeout):
@@ -64,8 +68,8 @@ def test_generate_coverletter_missing_api_key(monkeypatch):
         del os.environ["OPENROUTER_API_KEY"]
     with pytest.raises(SystemExit):
         generate_coverletter("", "dummy-model", "dummy prompt")
-        
-        
+
+
 def test_generate_coverletter_api_error(monkeypatch):
     # Simulate an API request failure.
     monkeypatch.setattr("generate.requests.post", dummy_requests_post_error)
