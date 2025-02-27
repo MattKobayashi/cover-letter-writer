@@ -22,11 +22,18 @@ def read_form():
         <meta charset="UTF-8">
         <title>Generate Cover Letter</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script>
+        function disableSubmit() {
+            var btn = document.getElementById("submitBtn");
+            btn.disabled = true;
+            btn.innerText = "Loading...";
+        }
+        </script>
     </head>
     <body>
     <div class="container mt-5">
         <h1>Generate Cover Letter</h1>
-        <form action="/generate" method="post" enctype="multipart/form-data">
+        <form action="/generate" method="post" enctype="multipart/form-data" onsubmit="disableSubmit()">
             <div class="mb-3">
                 <label for="resume" class="form-label">Resume (PDF)</label>
                 <input type="file" class="form-control" id="resume" name="resume" accept="application/pdf" required>
@@ -47,7 +54,7 @@ def read_form():
                 <label for="api_key" class="form-label">API Key</label>
                 <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Leave blank to use environment variable">
             </div>
-            <button type="submit" class="btn btn-primary">Generate</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Generate</button>
         </form>
     </div>
     </body>
