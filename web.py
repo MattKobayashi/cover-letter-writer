@@ -6,10 +6,12 @@ from generate import generate_coverletter  # reuse your API call function
 
 app = FastAPI()
 
+
 def extract_pdf_text_bytes(file_bytes: bytes) -> str:
     reader = PdfReader(io.BytesIO(file_bytes))
     # Concatenate the text from all PDF pages.
     return "\n".join(page.extract_text() for page in reader.pages)
+
 
 @app.get("/", response_class=HTMLResponse)
 def read_form():
@@ -52,6 +54,7 @@ def read_form():
     </html>
     """
 
+
 @app.post("/generate", response_class=HTMLResponse)
 async def generate_cover_letter_web(
     resume: UploadFile = File(...),
@@ -76,10 +79,10 @@ And this job advertisement:
 {job_text}
 
 Focus on matching key skills and experience. Use professional tone."""
-    
+
     # Generate cover letter by reusing your existing function.
     cover_letter = generate_coverletter(api_key, model, prompt)
-    
+
     # Return the result within a Bootstrap-styled page.
     return f"""
     <!DOCTYPE html>
@@ -87,7 +90,7 @@ Focus on matching key skills and experience. Use professional tone."""
     <head>
         <meta charset="UTF-8">
         <title>Generated Cover Letter</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
     <div class="container mt-5">

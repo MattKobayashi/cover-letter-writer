@@ -6,11 +6,11 @@
 # ]
 # ///
 
-import argparse
 import os
 import sys
 from PyPDF2 import PdfReader
 import requests
+
 
 def main():
     import argparse
@@ -144,5 +144,3 @@ def generate_coverletter(api_key, model, prompt):
         sys.exit("Unexpected API response format")
     except Exception as e:
         sys.exit(f"Error processing response: {str(e)}")
-
-
