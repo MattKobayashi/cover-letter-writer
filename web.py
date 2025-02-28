@@ -27,7 +27,7 @@ def read_form():
             var btn = document.getElementById("submitBtn");
             btn.disabled = true;
             btn.innerText = "Loading...";
-        }}
+        }
         </script>
     </head>
     <body>
@@ -60,7 +60,7 @@ def read_form():
     </div>
     </body>
     </html>
-    """.format(cover_letter=cover_letter)
+    """
 
 
 @app.post("/generate", response_class=HTMLResponse)
@@ -92,7 +92,7 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
     cover_letter = generate_coverletter(api_key, model, prompt)
 
     # Return the result within a Bootstrap-styled page.
-    return """
+    return f"""
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -104,7 +104,7 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
     <div class="container mt-5">
         <h1>Generated Cover Letter</h1>
         <p />
-        <pre id="coverLetterText" class="bg-light p-3">{{cover_letter}}</pre>
+        <pre id="coverLetterText" class="bg-light p-3">{cover_letter}</pre>
         <button type="button" class="btn btn-info mt-3" onclick="copyToClipboard()">Copy Cover Letter</button>
         <a href="/" class="btn btn-secondary mt-3">New Cover Letter</a>
         <script>
@@ -113,7 +113,7 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
             navigator.clipboard.writeText(text)
                 .then(() => alert("Cover letter copied to clipboard!"))
                 .catch(err => alert("Error copying text: " + err));
-        }
+        }}
         </script>
     </div>
     </body>
