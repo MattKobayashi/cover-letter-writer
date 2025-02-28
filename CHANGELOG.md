@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.1.0...v1.2.0) (2025-02-28)
+
+
+### Features
+
+* Add button to copy cover letter text to clipboard in web.py ([59dc9e4](https://github.com/MattKobayashi/cover-letter-writer/commit/59dc9e4a66ba6b993ba407b10b04403ca2cea2d8))
+* Update language and model in cover letter generation form ([e22ff2b](https://github.com/MattKobayashi/cover-letter-writer/commit/e22ff2b99b439224cae91b4075480572490e472f))
+
+
+### Bug Fixes
+
+* **deps:** update dependency fastapi to v0.115.9 ([#17](https://github.com/MattKobayashi/cover-letter-writer/issues/17)) ([84e79dc](https://github.com/MattKobayashi/cover-letter-writer/commit/84e79dc58e12d84aaa165378063bf13f2073e70d))
+* Remove placeholder from API key input field in form ([4c9daa5](https://github.com/MattKobayashi/cover-letter-writer/commit/4c9daa555e64e1e1e40df7ad3d55d78db0be9cce))
+* Replace f-string with multiline string and format for cover letter ([de36543](https://github.com/MattKobayashi/cover-letter-writer/commit/de365439fcddc133f9c684fd3a13f2f510dbdeb6))
+* Require API key in POST endpoint and HTML form input ([b596f26](https://github.com/MattKobayashi/cover-letter-writer/commit/b596f266536cfab6362e44fc9abe8df070bc6873))
+
 ## [1.1.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.0.0...v1.1.0) (2025-02-27)
 
 
