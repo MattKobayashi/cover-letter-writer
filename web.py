@@ -53,7 +53,7 @@ def read_form():
             </div>
             <div class="mb-3">
                 <label for="api_key" class="form-label"><a href="https://openrouter.ai/settings/keys" target="_blank">OpenRouter</a> API Key</label>
-                <input type="text" class="form-control" id="api_key" name="api_key">
+                <input type="text" class="form-control" id="api_key" name="api_key" required>
             </div>
             <button type="submit" id="submitBtn" class="btn btn-primary">Generate</button>
         </form>
@@ -69,7 +69,7 @@ async def generate_cover_letter_web(
     job_pdf: UploadFile = File(...),
     model: str = Form("mistralai/mistral-large-2411"),
     lang: str = Form("Australian English"),
-    api_key: str = Form(None)
+    api_key: str = Form(...)
 ):
     # Read file bytes from uploads.
     resume_bytes = await resume.read()
