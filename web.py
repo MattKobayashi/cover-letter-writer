@@ -53,7 +53,7 @@ def read_form():
             </div>
             <div class="mb-3">
                 <label for="api_key" class="form-label"><a href="https://openrouter.ai/settings/keys" target="_blank">OpenRouter</a> API Key</label>
-                <input type="text" class="form-control" id="api_key" name="api_key" placeholder="Leave blank to use environment variable">
+                <input type="text" class="form-control" id="api_key" name="api_key">
             </div>
             <button type="submit" id="submitBtn" class="btn btn-primary">Generate</button>
         </form>
