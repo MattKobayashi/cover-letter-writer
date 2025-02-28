@@ -49,7 +49,7 @@ def read_form():
             </div>
             <div class="mb-3">
                 <label for="lang" class="form-label">Language</label>
-                <input type="text" class="form-control" id="lang" name="lang" value="Australian English">
+                <input type="text" class="form-control" id="lang" name="lang" value="English (Australia)">
             </div>
             <div class="mb-3">
                 <label for="api_key" class="form-label"><a href="https://openrouter.ai/settings/keys" target="_blank">OpenRouter</a> API Key</label>
@@ -67,8 +67,8 @@ def read_form():
 async def generate_cover_letter_web(
     resume: UploadFile = File(...),
     job_pdf: UploadFile = File(...),
-    model: str = Form("mistralai/mistral-large-2411"),
-    lang: str = Form("Australian English"),
+    model: str = Form("google/gemini-2.0-flash-001"),
+    lang: str = Form("English (Australia)"),
     api_key: str = Form(...)
 ):
     # Read file bytes from uploads.
@@ -80,13 +80,13 @@ async def generate_cover_letter_web(
     job_text = extract_pdf_text_bytes(job_bytes)
 
     # Build the prompt (mirroring generate.py's prompt).
-    prompt = f"""Write a {lang} cover letter using this resume:
+    prompt = f"""Write a cover letter for a job application using this resume:
 {resume_text}
 
 And this job advertisement:
 {job_text}
 
-Focus on matching key skills and experience. Use professional tone."""
+Focus on matching key skills and experience. Use professional tone. Write in {lang}."""
 
     # Generate cover letter by reusing your existing function.
     cover_letter = generate_coverletter(api_key, model, prompt)
@@ -105,7 +105,7 @@ Focus on matching key skills and experience. Use professional tone."""
         <h1>Generated Cover Letter</h1>
         <p />
         <pre class="bg-light p-3">{cover_letter}</pre>
-        <a href="/" class="btn btn-secondary mt-3">Generate Another</a>
+        <a href="/" class="btn btn-secondary mt-3">New Cover Letter</a>
     </div>
     </body>
     </html>
