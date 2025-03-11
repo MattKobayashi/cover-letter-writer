@@ -9,13 +9,13 @@ app = FastAPI()
 
 def extract_pdf_text_bytes(file_bytes: bytes) -> str:
     """Extract text content from PDF bytes.
-    
+
     Converts the provided bytes into a PDF document using an in-memory buffer,
     then extracts and concatenates the text content from all pages.
-    
+
     Parameters:
         file_bytes (bytes): The raw bytes of a PDF file
-        
+
     Returns:
         str: The extracted text from all pages of the PDF, joined with newlines
     """
@@ -27,11 +27,11 @@ def extract_pdf_text_bytes(file_bytes: bytes) -> str:
 @app.get("/", response_class=HTMLResponse)
 def read_form():
     """Render the cover letter generation form.
-    
+
     Returns an HTML page containing a form where users can upload their resume
     and job description PDFs, specify language preferences, and provide an API key
     for generating a customized cover letter.
-    
+
     Returns:
         HTMLResponse: A webpage with the cover letter generation form
     """
