@@ -204,8 +204,8 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
         </body>
         </html>
         """
-    except Exception as e:
-        return f"""
+    except Exception:
+        return """
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -216,7 +216,7 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
         <body>
         <div class="container mt-5">
             <h1>Error</h1>
-            <div class="alert alert-danger">{str(e)}</div>
+            <div class="alert alert-danger">An error has occurred!</div>
             <a href="/" class="btn btn-primary">Try Again</a>
         </div>
         </body>

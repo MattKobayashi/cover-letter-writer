@@ -69,7 +69,7 @@ def test_generate_endpoint(monkeypatch):
 def test_generate_endpoint_error(monkeypatch):
     # Make generate_coverletter raise an exception
     def mock_generate_error(*args, **kwargs):
-        raise Exception("Test error message")
+        raise Exception()
 
     monkeypatch.setattr("web.generate_coverletter", mock_generate_error)
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
@@ -86,5 +86,5 @@ def test_generate_endpoint_error(monkeypatch):
     response = client.post("/generate", files=files, data=data)
     assert response.status_code == 200
     # Check that the returned page includes our error message
-    assert "Test error message" in response.text
+    assert "An error has occurred!" in response.text
     assert "Try Again" in response.text
