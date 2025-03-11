@@ -1,10 +1,56 @@
+import os
 import io
+import requests
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 from pypdf import PdfReader
-from generate import generate_coverletter  # reuse your API call function
 
 app = FastAPI()
+
+
+def generate_coverletter(api_key, model, prompt):
+    """Generates cover letter content using OpenRouter API.
+
+    Args:
+        api_key (str): OpenRouter API key (optional if env var set)
+        model (str): Model name from OpenRouter's model catalog
+        prompt (str): Complete prompt for LLM to generate cover letter
+
+    Returns:
+        str: Generated cover letter content from successful API response
+
+    Raises:
+        Exception: For API errors, missing key, or unexpected response format
+    """
+    headers = {
+        'Authorization': f'Bearer {api_key or os.getenv("OPENROUTER_API_KEY")}',
+        'Content-Type': 'application/json'
+    }
+
+    if not headers['Authorization'].split()[-1]:
+        raise ValueError("Missing API key")
+
+    try:
+        response = requests.post(
+            'https://openrouter.ai/api/v1/chat/completions',
+            json={
+                'model': model,
+                'messages': [{'role': 'user', 'content': prompt}]
+            },
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"API request failed: {str(e)}")
+
+    try:
+        result = response.json()
+        return result['choices'][0]['message']['content']
+    except (KeyError, IndexError) as e:
+        raise Exception("Unexpected API response format")
+    except Exception as e:
+        raise Exception(f"Error processing response: {str(e)}")
 
 
 def extract_pdf_text_bytes(file_bytes: bytes) -> str:
@@ -109,16 +155,17 @@ async def generate_cover_letter_web(
         HTMLResponse: A webpage containing the generated cover letter with 
                       copy-to-clipboard functionality
     """
-    # Read file bytes from uploads.
-    resume_bytes = await resume.read()
-    job_bytes = await job_pdf.read()
+    try:
+        # Read file bytes from uploads.
+        resume_bytes = await resume.read()
+        job_bytes = await job_pdf.read()
 
-    # Extract text using our helper.
-    resume_text = extract_pdf_text_bytes(resume_bytes)
-    job_text = extract_pdf_text_bytes(job_bytes)
+        # Extract text using our helper.
+        resume_text = extract_pdf_text_bytes(resume_bytes)
+        job_text = extract_pdf_text_bytes(job_bytes)
 
-    # Build the prompt (mirroring generate.py's prompt).
-    prompt = f"""Write a cover letter for a job application using this resume:
+        # Build the prompt (mirroring generate.py's prompt).
+        prompt = f"""Write a cover letter for a job application using this resume:
 {resume_text}
 
 And this job advertisement:
@@ -126,37 +173,55 @@ And this job advertisement:
 
 Focus on matching key skills and experience. Use professional tone. Write in {lang}."""
 
-    # Generate cover letter by reusing your existing function.
-    cover_letter = generate_coverletter(api_key, model, prompt)
+        # Generate cover letter using our function.
+        cover_letter = generate_coverletter(api_key, model, prompt)
 
-    # Return the result within a Bootstrap-styled page.
-    return f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Generated Cover Letter</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    </head>
-    <body>
-    <div class="container mt-5">
-        <h1>Generated Cover Letter</h1>
-        <p />
-        <pre id="coverLetterText" class="bg-light p-3">{cover_letter}</pre>
-        <button type="button" class="btn btn-info mt-3" onclick="copyToClipboard()">Copy Cover Letter</button>
-        <a href="/" class="btn btn-secondary mt-3">New Cover Letter</a>
-        <script>
-        function copyToClipboard() {{
-            var text = document.getElementById("coverLetterText").innerText;
-            navigator.clipboard.writeText(text)
-                .then(() => alert("Cover letter copied to clipboard!"))
-                .catch(err => alert("Error copying text: " + err));
-        }}
-        </script>
-    </div>
-    </body>
-    </html>
-    """
+        # Return the result within a Bootstrap-styled page.
+        return f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Generated Cover Letter</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body>
+        <div class="container mt-5">
+            <h1>Generated Cover Letter</h1>
+            <p />
+            <pre id="coverLetterText" class="bg-light p-3">{cover_letter}</pre>
+            <button type="button" class="btn btn-info mt-3" onclick="copyToClipboard()">Copy Cover Letter</button>
+            <a href="/" class="btn btn-secondary mt-3">New Cover Letter</a>
+            <script>
+            function copyToClipboard() {{
+                var text = document.getElementById("coverLetterText").innerText;
+                navigator.clipboard.writeText(text)
+                    .then(() => alert("Cover letter copied to clipboard!"))
+                    .catch(err => alert("Error copying text: " + err));
+            }}
+            </script>
+        </div>
+        </body>
+        </html>
+        """
+    except Exception as e:
+        return f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Error</title>
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        </head>
+        <body>
+        <div class="container mt-5">
+            <h1>Error</h1>
+            <div class="alert alert-danger">{str(e)}</div>
+            <a href="/" class="btn btn-primary">Try Again</a>
+        </div>
+        </body>
+        </html>
+        """
 
 if __name__ == "__main__":
     import uvicorn
