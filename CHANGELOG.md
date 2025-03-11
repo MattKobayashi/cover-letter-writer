@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.2.0...v1.3.0) (2025-03-11)
+
+
+### Features
+
+* Remove generate.py ([#25](https://github.com/MattKobayashi/cover-letter-writer/issues/25)) ([0c651d2](https://github.com/MattKobayashi/cover-letter-writer/commit/0c651d2a18d4e6ceadeca9daf1974851d43846b6))
+
+
+### Bug Fixes
+
+* **deps:** update dependency fastapi to v0.115.10 ([#19](https://github.com/MattKobayashi/cover-letter-writer/issues/19)) ([32f2041](https://github.com/MattKobayashi/cover-letter-writer/commit/32f2041c43aad32b4f53aa0df6ac8cfe8d2cf5a3))
+* **deps:** update dependency fastapi to v0.115.11 ([#21](https://github.com/MattKobayashi/cover-letter-writer/issues/21)) ([2b1de7e](https://github.com/MattKobayashi/cover-letter-writer/commit/2b1de7e56be6ca10d4735431516325ace5f38570))
+* **deps:** update dependency pypdf to v5.3.1 ([#22](https://github.com/MattKobayashi/cover-letter-writer/issues/22)) ([c2a83df](https://github.com/MattKobayashi/cover-letter-writer/commit/c2a83df55ec808f946a79a47321cbfe5ab542295))
+
 ## [1.2.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.1.0...v1.2.0) (2025-02-28)
 
 
