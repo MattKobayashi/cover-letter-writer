@@ -42,15 +42,15 @@ def generate_coverletter(api_key, model, prompt):
         )
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        raise Exception(f"API request failed: {str(e)}")
+        raise Exception(f"API request failed: {str(e)}") from e
 
     try:
         result = response.json()
         return result['choices'][0]['message']['content']
     except (KeyError, IndexError) as e:
-        raise Exception("Unexpected API response format")
+        raise Exception("Unexpected API response format") from e
     except Exception as e:
-        raise Exception(f"Error processing response: {str(e)}")
+        raise Exception(f"Error processing response: {str(e)}") from e
 
 
 def extract_pdf_text_bytes(file_bytes: bytes) -> str:

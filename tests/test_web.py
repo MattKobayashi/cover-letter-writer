@@ -38,9 +38,9 @@ def test_generate_coverletter(monkeypatch):
             def json(self):
                 return {"choices": [{"message": {"content": "Test Cover Letter"}}]}
         return MockResponse()
-    
+
     monkeypatch.setattr("requests.post", mock_post)
-    
+
     result = generate_coverletter("dummy-key", "dummy-model", "dummy-prompt")
     assert result == "Test Cover Letter"
 
@@ -70,7 +70,7 @@ def test_generate_endpoint_error(monkeypatch):
     # Make generate_coverletter raise an exception
     def mock_generate_error(*args, **kwargs):
         raise Exception("Test error message")
-    
+
     monkeypatch.setattr("web.generate_coverletter", mock_generate_error)
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
 
