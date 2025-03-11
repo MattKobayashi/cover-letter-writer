@@ -71,6 +71,24 @@ async def generate_cover_letter_web(
     lang: str = Form("English (Australia)"),
     api_key: str = Form(...)
 ):
+    """Generate a cover letter from uploaded resume and job description PDFs.
+    
+    Extracts text from the uploaded PDF files, creates a prompt that combines
+    the resume text and job description, and calls the AI model to generate
+    a customized cover letter. Returns the result as an HTML page with the
+    generated cover letter and options to copy it to clipboard.
+    
+    Parameters:
+        resume (UploadFile): The user's resume in PDF format
+        job_pdf (UploadFile): The job description in PDF format
+        model (str): The AI model to use for generation
+        lang (str): The language to use for the cover letter
+        api_key (str): The OpenRouter API key for authentication
+        
+    Returns:
+        HTMLResponse: A webpage containing the generated cover letter with 
+                      copy-to-clipboard functionality
+    """
     # Read file bytes from uploads.
     resume_bytes = await resume.read()
     job_bytes = await job_pdf.read()
