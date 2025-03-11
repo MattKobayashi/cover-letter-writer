@@ -6,5 +6,5 @@ RUN adduser --disabled-password app \
 USER app
 WORKDIR /opt/cover-letter-writer
 
-COPY generate.py pyproject.toml web.py /opt/cover-letter-writer/
+COPY pyproject.toml web.py /opt/cover-letter-writer/
 ENTRYPOINT [ "uv", "run", "web.py" ]
