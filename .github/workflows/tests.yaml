@@ -71,6 +71,7 @@ on:
     paths:
       - "**.py"
       - "**.toml"
+      - "**.yaml"
       - "Dockerfile"
       - "requirements.txt"
   workflow_dispatch:
