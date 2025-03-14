@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.1](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.3.0...v1.3.1) (2025-03-14)
+
+
+### Bug Fixes
+
+* Simplify GitHub Actions workflows and improve test configuration ([#30](https://github.com/MattKobayashi/cover-letter-writer/issues/30)) ([5926224](https://github.com/MattKobayashi/cover-letter-writer/commit/592622405018639a2fd4dbaec83ed229a56cf7ae))
+* Update error handling to display generic error message in web app ([#26](https://github.com/MattKobayashi/cover-letter-writer/issues/26)) ([86ab817](https://github.com/MattKobayashi/cover-letter-writer/commit/86ab817d6f823fe031344ea2b4d71f9d4e8505bd))
+
 ## [1.3.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.2.0...v1.3.0) (2025-03-11)
 
 
