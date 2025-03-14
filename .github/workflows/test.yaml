@@ -1,6 +1,4 @@
 ---
-name: Test
-
 on:
   pull_request:
     branches:
@@ -11,17 +9,14 @@ on:
       - "Dockerfile"
       - "requirements.txt"
   workflow_dispatch:
-
 env:
   REPO_NAME: mattkobayashi
   IMAGE_NAME: cover-letter-writer
-
 permissions:
   contents: read
-
 jobs:
   test:
-    name: Test Python and Docker image build
+    name: Test Python and container image build
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -39,8 +34,8 @@ jobs:
       # https://github.com/actions/checkout
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      # Install test dependencies
-      - name: Install test dependencies
+      # Run unit tests
+      - name: Run unit tests
         run: |
           set -eux
           pipx install uv
@@ -64,14 +59,14 @@ jobs:
           load: true
           tags: "${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:test"
       # Install uuid-runtime package
-      - name: Install `uuid-runtime`
+      - name: Install uuid-runtime
         run: |
-          set -x
+          set -eux
           sudo apt-get --yes install uuid-runtime
       # Test the built image
       - name: Test image
         run: |
-          set -x
+          set -eux
           CONTAINER_ID="$(uuidgen)"
           docker container run --attach=stdout --attach=stderr --init --name=$CONTAINER_ID --rm ${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:test &
           sleep 5
@@ -80,5 +75,5 @@ jobs:
       - name: Remove test image
         if: ${{ !cancelled() }}
         run: |
-          set -x
+          set -eux
           docker image rm --force ${{ steps.build-export.outputs.imageid }}
