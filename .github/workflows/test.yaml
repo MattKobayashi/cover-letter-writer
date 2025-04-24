@@ -23,8 +23,8 @@ jobs:
           set -eux
           pipx install uv
           uv run --dev python3 -m pytest -v tests/
-  container:
-    name: Container image
+  image:
+    name: Image
     runs-on: ubuntu-24.04
     steps:
       # Checkout the repository
@@ -61,7 +61,7 @@ jobs:
         run: |
           set -eux
           docker image rm --force ${{ steps.build.outputs.imageid }}
-name: Tests
+name: Test
 on:
   pull_request:
     branches:
@@ -71,7 +71,6 @@ on:
       - "**.toml"
       - "**.yaml"
       - "Dockerfile"
-      - "requirements.txt"
   workflow_dispatch:
 permissions:
   contents: read
