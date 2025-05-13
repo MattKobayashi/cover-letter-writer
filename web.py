@@ -2,10 +2,16 @@ import os
 import io
 import requests
 from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from pypdf import PdfReader
 
 app = FastAPI()
+
+
+@app.get("/health", response_class=PlainTextResponse, include_in_schema=False)
+def health_check() -> str:
+    """Simple health-check endpoint used by load-balancers / orchestration."""
+    return "ok"
 
 
 def generate_coverletter(api_key, model, prompt):
