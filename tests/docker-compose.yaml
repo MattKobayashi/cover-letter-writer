@@ -1,0 +1,16 @@
+---
+name: cover-letter-writer
+services:
+  cover-letter-writer:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: cover-letter-writer
+    networks:
+      - cover-letter-writer
+    ports:
+      - "8000:8000/tcp"
+networks:
+  cover-letter-writer:
+    driver: bridge
+    name: cover-letter-writer
