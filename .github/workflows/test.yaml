@@ -47,20 +47,25 @@ jobs:
         with:
           load: true
           tags: "${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:test"
+      # Start container image
+      - name: Start container image
+        run: |
+          set -eux
+          docker compose up --build --detach --timeout 60
+        working-directory: tests
       # Test container image
       - name: Test container image
         run: |
           set -eux
-          CONTAINER_ID="$(uuidgen)"
-          docker container run --attach=stdout --attach=stderr --name=$CONTAINER_ID --rm ${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:test &
-          sleep 5
-          docker container stop $CONTAINER_ID
-      # Remove the test container image
-      - name: Remove container image
+          sleep 10
+          docker inspect --format='{{.State.Health.Status}}' cover-letter-writer | grep 'healthy'
+      # Stop and remove the test container image
+      - name: Stop and remove container image
         if: ${{ !cancelled() }}
         run: |
           set -eux
-          docker image rm --force ${{ steps.build.outputs.imageid }}
+          docker compose down --timeout 60
+        working-directory: tests
 name: Test
 on:
   pull_request:
