@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.3.4...v1.4.0) (2025-05-13)
+
+
+### Features
+
+* add /health endpoint and update tests ([#56](https://github.com/MattKobayashi/cover-letter-writer/issues/56)) ([eaf0e80](https://github.com/MattKobayashi/cover-letter-writer/commit/eaf0e80939287f011a83cab3511fd9d42308f716))
+
 ## [1.3.4](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.3.3...v1.3.4) (2025-05-12)
 
 
