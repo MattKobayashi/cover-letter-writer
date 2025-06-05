@@ -57,7 +57,7 @@ jobs:
       - name: Test container image
         run: |
           set -eux
-          sleep 10
+          sleep 30
           docker inspect --format='{{.State.Health.Status}}' cover-letter-writer | grep 'healthy'
       # Stop and remove the test container image
       - name: Stop and remove container image
