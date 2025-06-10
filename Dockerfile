@@ -5,5 +5,5 @@ USER cover-letter-writer
 WORKDIR /opt/cover-letter-writer
 COPY pyproject.toml web.py /opt/cover-letter-writer/
 ENTRYPOINT [ "uv", "run", "web.py" ]
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
     CMD curl -fsSL http://127.0.0.1:8000/health | grep 'ok'

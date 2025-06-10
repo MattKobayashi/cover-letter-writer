@@ -52,7 +52,7 @@ jobs:
         run: |
           set -eux
           docker compose up --build --detach --timeout 60
-          sleep 10
+          sleep 60
           docker inspect --format='{{.State.Health.Status}}' cover-letter-writer
           docker inspect --format='{{.State.Health.Status}}' cover-letter-writer | grep 'healthy'
         working-directory: tests
