@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.1...v1.4.2) (2025-06-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency requests to v2.32.4 [security] ([#65](https://github.com/MattKobayashi/cover-letter-writer/issues/65)) ([d9275a0](https://github.com/MattKobayashi/cover-letter-writer/commit/d9275a0ef4dbad6d328b662a2c74da2c8eab6387))
+
 ## [1.4.1](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.0...v1.4.1) (2025-06-02)
 
 
