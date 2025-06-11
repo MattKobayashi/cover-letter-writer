@@ -139,9 +139,9 @@ def read_form():
 async def generate_cover_letter_web(
     resume: UploadFile = File(...),
     job_pdf: UploadFile = File(...),
-    model: str = Form("google/gemini-2.0-flash-001"),
+    model: str = Form("google/gemini-2.5-flash-preview"),
     lang: str = Form("English (Australia)"),
-    api_key: str = Form(...)
+    api_key: str = Form(...),
 ):
     """Generate a cover letter from uploaded resume and job description PDFs.
 
