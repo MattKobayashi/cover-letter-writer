@@ -29,22 +29,19 @@ def generate_coverletter(api_key, model, prompt):
         Exception: For API errors, missing key, or unexpected response format
     """
     headers = {
-        'Authorization': f'Bearer {api_key or os.getenv("OPENROUTER_API_KEY")}',
-        'Content-Type': 'application/json'
+        "Authorization": f"Bearer {api_key or os.getenv('OPENROUTER_API_KEY')}",
+        "Content-Type": "application/json",
     }
 
-    if not headers['Authorization'].split()[-1]:
+    if not headers["Authorization"].split()[-1]:
         raise ValueError("Missing API key")
 
     try:
         response = requests.post(
-            'https://openrouter.ai/api/v1/chat/completions',
-            json={
-                'model': model,
-                'messages': [{'role': 'user', 'content': prompt}]
-            },
+            "https://openrouter.ai/api/v1/chat/completions",
+            json={"model": model, "messages": [{"role": "user", "content": prompt}]},
             headers=headers,
-            timeout=30
+            timeout=30,
         )
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
@@ -52,7 +49,7 @@ def generate_coverletter(api_key, model, prompt):
 
     try:
         result = response.json()
-        return result['choices'][0]['message']['content']
+        return result["choices"][0]["message"]["content"]
     except (KeyError, IndexError) as e:
         raise Exception("Unexpected API response format") from e
     except Exception as e:
@@ -139,9 +136,9 @@ def read_form():
 async def generate_cover_letter_web(
     resume: UploadFile = File(...),
     job_pdf: UploadFile = File(...),
-    model: str = Form("google/gemini-2.0-flash-001"),
+    model: str = Form("google/gemini-2.5-flash-preview"),
     lang: str = Form("English (Australia)"),
-    api_key: str = Form(...)
+    api_key: str = Form(...),
 ):
     """Generate a cover letter from uploaded resume and job description PDFs.
 
@@ -158,7 +155,7 @@ async def generate_cover_letter_web(
         api_key (str): The OpenRouter API key for authentication
 
     Returns:
-        HTMLResponse: A webpage containing the generated cover letter with 
+        HTMLResponse: A webpage containing the generated cover letter with
                       copy-to-clipboard functionality
     """
     try:
@@ -229,6 +226,8 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
         </html>
         """
 
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("web:app", host="0.0.0.0", port=8000, reload=True)
+
+    uvicorn.run("web:app", host="0.0.0.0", port=8000, reload=False)
