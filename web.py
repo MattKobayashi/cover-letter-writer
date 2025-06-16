@@ -114,7 +114,7 @@ def read_form():
             </div>
             <div class="mb-3">
                 <label for="model" class="form-label">Model</label>
-                <input type="text" class="form-control" id="model" name="model" value="google/gemini-2.0-flash-001">
+                <input type="text" class="form-control" id="model" name="model" value="google/gemini-2.5-flash-preview-05-20">
             </div>
             <div class="mb-3">
                 <label for="lang" class="form-label">Language</label>
@@ -136,7 +136,7 @@ def read_form():
 async def generate_cover_letter_web(
     resume: UploadFile = File(...),
     job_pdf: UploadFile = File(...),
-    model: str = Form("google/gemini-2.5-flash-preview"),
+    model: str = Form("google/gemini-2.5-flash-preview-05-20"),
     lang: str = Form("English (Australia)"),
     api_key: str = Form(...),
 ):
