@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.4](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.3...v1.4.4) (2025-06-16)
+
+
+### Bug Fixes
+
+* update default model to Gemini 2.5 Flash ([#71](https://github.com/MattKobayashi/cover-letter-writer/issues/71)) ([ee4579b](https://github.com/MattKobayashi/cover-letter-writer/commit/ee4579b6f466b2a1d87d1a32544b158cfb4d3ac6))
+
 ## [1.4.3](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.2...v1.4.3) (2025-06-11)
 
 
