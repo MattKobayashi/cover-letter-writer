@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.7](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.6...v1.4.7) (2025-06-23)
+
+
+### Bug Fixes
+
+* Ensure health check only matches whole word 'healthy' ([#80](https://github.com/MattKobayashi/cover-letter-writer/issues/80)) ([f4dba09](https://github.com/MattKobayashi/cover-letter-writer/commit/f4dba097d731ce2854106feaec0ab0ed7c531eb5))
+
 ## [1.4.6](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.5...v1.4.6) (2025-06-23)
 
 
