@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.8](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.7...v1.4.8) (2025-06-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency fastapi to v0.115.14 ([#82](https://github.com/MattKobayashi/cover-letter-writer/issues/82)) ([e784962](https://github.com/MattKobayashi/cover-letter-writer/commit/e784962b48c7d5718652cf1c111f8a551e5d2322))
+
 ## [1.4.7](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.6...v1.4.7) (2025-06-23)
 
 
