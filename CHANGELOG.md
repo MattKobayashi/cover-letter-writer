@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.10](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.9...v1.4.10) (2025-07-02)
+
+
+### Bug Fixes
+
+* add integrity attribute to external scripts and CSS ([#86](https://github.com/MattKobayashi/cover-letter-writer/issues/86)) ([e79e303](https://github.com/MattKobayashi/cover-letter-writer/commit/e79e303d400c106464089a767468f53383853a47))
+
 ## [1.4.9](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.8...v1.4.9) (2025-06-29)
 
 
