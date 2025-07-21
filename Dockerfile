@@ -1,6 +1,15 @@
-FROM python:3.13.5-alpine@sha256:37b14db89f587f9eaa890e4a442a3fe55db452b69cca1403cc730bd0fbdc8aaf
-RUN adduser --disabled-password cover-letter-writer \
-    && apk --no-cache add curl uv
+FROM alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
+
+# renovate: datasource=repology depName=alpine_3_22/curl
+ENV CURL_VERSION="8.14.1-r1"
+# renovate: datasource=repology depName=alpine_3_22/uv
+ENV UV_VERSION="0.7.22-r0"
+
+RUN apk --no-cache add \
+    curl="${CURL_VERSION}" \
+    uv="${UV_VERSION}"
+
+RUN adduser --disabled-password cover-letter-writer
 USER cover-letter-writer
 WORKDIR /opt/cover-letter-writer
 COPY pyproject.toml web.py /opt/cover-letter-writer/
