@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.14](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.13...v1.4.14) (2025-07-21)
+
+
+### Bug Fixes
+
+* **docker:** use alpine base ([#97](https://github.com/MattKobayashi/cover-letter-writer/issues/97)) ([8b16835](https://github.com/MattKobayashi/cover-letter-writer/commit/8b16835cf26ce89bf8b7ce8812e439bbd351667e))
+
 ## [1.4.13](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.12...v1.4.13) (2025-07-14)
 
 
