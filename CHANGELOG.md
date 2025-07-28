@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.15](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.14...v1.4.15) (2025-07-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pypdf to v5.9.0 ([#99](https://github.com/MattKobayashi/cover-letter-writer/issues/99)) ([ff7b52d](https://github.com/MattKobayashi/cover-letter-writer/commit/ff7b52ddfd3f9ee4e36b9fcb78ae3fb85bf58f3d))
+
 ## [1.4.14](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.4.13...v1.4.14) (2025-07-21)
 
 
