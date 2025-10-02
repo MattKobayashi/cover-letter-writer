@@ -1,7 +1,7 @@
 FROM alpine:3.22.1@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1
 
 # renovate: datasource=repology depName=alpine_3_22/curl
-ENV CURL_VERSION="8.14.1-r1"
+ENV CURL_VERSION="8.14.1-r2"
 # renovate: datasource=repology depName=alpine_3_22/uv
 ENV UV_VERSION="0.7.22-r0"
 
