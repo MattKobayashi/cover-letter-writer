@@ -5,7 +5,7 @@ description = "A tool to generate a cover letter using a LLM"
 readme = "README.md"
 requires-python = ">=3.13, <3.14"
 dependencies = [
-    "fastapi[standard]==0.118.2",
+    "fastapi[standard]==0.118.3",
     "pypdf==6.1.1",
     "requests==2.32.5",
 ]
