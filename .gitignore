@@ -1,6 +1,5 @@
 .aider*
 .DS_Store
 .gitignore
-uv.lock
 __pycache__/
 .pytest_cache/
