@@ -1,6 +1,6 @@
 [project]
 name = "cover-letter-writer"
-version = "1.4"
+version = "1.5"
 description = "A tool to generate a cover letter using a LLM"
 readme = "README.md"
 requires-python = ">=3.14, <3.15"
