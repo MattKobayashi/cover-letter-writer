@@ -137,7 +137,7 @@ def read_form():
 async def generate_cover_letter_web(
     resume: UploadFile = File(...),
     job_pdf: UploadFile = File(...),
-    model: str = Form("google/gemini-2.5-flash-preview-05-20"),
+    model: str = Form("openai/gpt-5.4-nano"),
     lang: str = Form("English (Australia)"),
     api_key: str = Form(...),
 ):
