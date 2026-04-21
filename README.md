@@ -20,4 +20,4 @@ uv run python3 web.py
 4. Paste your OpenRouter API key.
 5. Submit the form to generate a cover letter.
 
-Each request uses the API key supplied in the form. Uploaded files must be valid PDFs and are limited to 5 MB each.
+Each request uses the API key supplied in the form. Uploaded files must be sent as `application/pdf`, include a valid `%PDF-` header, contain extractable text, and be 5 MB or smaller.

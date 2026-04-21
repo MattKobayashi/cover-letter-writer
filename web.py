@@ -28,6 +28,14 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
+class OpenRouterError(RuntimeError):
+    """Raised when OpenRouter rejects a request or returns invalid data."""
+
+    def __init__(self, message: str, *, status_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+
+
 @app.get("/health", response_class=PlainTextResponse, include_in_schema=False)
 def health_check() -> str:
     """Simple health-check endpoint used by load-balancers / orchestration."""
@@ -102,7 +110,7 @@ def generate_coverletter(api_key: str, model: str, prompt: str) -> str:
 
     Raises:
         ValueError: If a required input is missing.
-        RuntimeError: If the API call fails or returns an unexpected response.
+        OpenRouterError: If the API call fails or returns an unexpected response.
     """
     api_key = api_key.strip()
     model = model.strip()
@@ -132,22 +140,55 @@ def generate_coverletter(api_key: str, model: str, prompt: str) -> str:
         status_code = (
             exc.response.status_code if exc.response is not None else "unknown"
         )
-        raise RuntimeError(
-            f"OpenRouter request failed with status code {status_code}."
+        raise OpenRouterError(
+            f"OpenRouter request failed with status code {status_code}.",
+            status_code=exc.response.status_code if exc.response is not None else None,
         ) from exc
     except requests.exceptions.RequestException as exc:
-        raise RuntimeError("Could not reach OpenRouter.") from exc
+        raise OpenRouterError("Could not reach OpenRouter.") from exc
 
     try:
         result = response.json()
         content = result["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError, ValueError) as exc:
-        raise RuntimeError("OpenRouter returned an unexpected response.") from exc
+        raise OpenRouterError("OpenRouter returned an unexpected response.") from exc
 
     if not isinstance(content, str) or not content.strip():
-        raise RuntimeError("OpenRouter returned an empty response.")
+        raise OpenRouterError("OpenRouter returned an empty response.")
 
     return content.strip()
+
+
+def get_openrouter_error_response(error: OpenRouterError) -> tuple[str, int]:
+    """Map OpenRouter failures to safe user-facing messages."""
+    if error.status_code in {401, 403}:
+        return "OpenRouter rejected the API key. Check your API key and try again.", 400
+    if error.status_code == 402:
+        return (
+            "OpenRouter reported insufficient credits for this request. "
+            "Check your account balance and try again.",
+            400,
+        )
+    if error.status_code == 404:
+        return (
+            "The selected model was not found. Choose another model and try again.",
+            400,
+        )
+    if error.status_code == 413:
+        return (
+            "OpenRouter rejected the request because the prompt was too large. "
+            "Try PDFs with less extractable text or choose a model with a larger context window.",
+            400,
+        )
+    if error.status_code == 429:
+        return "OpenRouter rate limited the request. Wait a moment and try again.", 429
+    if error.status_code is not None and 400 <= error.status_code < 500:
+        return (
+            "OpenRouter rejected the request. Check the selected model, API key, "
+            "and uploaded PDFs, then try again.",
+            400,
+        )
+    return "Failed to generate the cover letter. Please try again.", 502
 
 
 def extract_pdf_text_bytes(file_bytes: bytes) -> str:
@@ -201,7 +242,7 @@ async def read_uploaded_pdf(upload: UploadFile, label: str) -> bytes:
     Raises:
         ValueError: If the upload is too large or not a PDF.
     """
-    if upload.content_type and upload.content_type != "application/pdf":
+    if upload.content_type != "application/pdf":
         raise ValueError(f"{label} must be uploaded as a PDF.")
 
     file_bytes = await upload.read(MAX_UPLOAD_SIZE_BYTES + 1)
@@ -261,11 +302,11 @@ def read_form() -> HTMLResponse:
 
 @app.post("/generate", response_class=HTMLResponse)
 async def generate_cover_letter_web(
-    resume: UploadFile = File(...),
-    job_pdf: UploadFile = File(...),
+    resume: UploadFile | None = File(default=None),
+    job_pdf: UploadFile | None = File(default=None),
     model: str = Form(DEFAULT_MODEL),
     lang: str = Form(DEFAULT_LANGUAGE),
-    api_key: str = Form(...),
+    api_key: str | None = Form(default=None),
 ) -> HTMLResponse:
     """Generate a cover letter from uploaded resume and job description PDFs.
 
@@ -280,7 +321,15 @@ async def generate_cover_letter_web(
         A webpage containing the generated cover letter.
     """
     try:
-        api_key_value = api_key.strip()
+        if resume is None:
+            logger.info("Invalid cover letter request: missing resume")
+            return render_error_page("Missing resume PDF.", status_code=400)
+
+        if job_pdf is None:
+            logger.info("Invalid cover letter request: missing job advertisement")
+            return render_error_page("Missing job advertisement PDF.", status_code=400)
+
+        api_key_value = (api_key or "").strip()
         if not api_key_value:
             logger.info("Invalid cover letter request: missing API key")
             return render_error_page("Missing API key.", status_code=400)
@@ -340,8 +389,20 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
             "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again.",
             status_code=400,
         )
+    except OpenRouterError as exc:
+        message, status_code = get_openrouter_error_response(exc)
+        if status_code >= 500:
+            logger.exception("Cover letter generation failed")
+        else:
+            logger.info(
+                "OpenRouter rejected cover letter request with upstream status %s",
+                exc.status_code if exc.status_code is not None else "unknown",
+            )
+        return render_error_page(message, status_code=status_code)
     except RuntimeError:
-        logger.exception("Cover letter generation failed")
+        logger.exception(
+            "Cover letter generation failed before receiving an OpenRouter response"
+        )
         return render_error_page(
             "Failed to generate the cover letter. Please try again.",
             status_code=502,
@@ -353,8 +414,10 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
             status_code=500,
         )
     finally:
-        await resume.close()
-        await job_pdf.close()
+        if resume is not None:
+            await resume.close()
+        if job_pdf is not None:
+            await job_pdf.close()
 
 
 if __name__ == "__main__":
