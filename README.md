@@ -4,26 +4,20 @@
 
 1. Get an API key from your [OpenRouter](https://openrouter.ai/settings/keys) account.
 2. Install [uv](https://docs.astral.sh/uv/getting-started/installation/#homebrew).
-3. Run the script with your preferred options:
+3. Start the web app:
 
 ```shell
-uv run generate.py <resume PDF> <job PDF> --api-key <API key>
+uv run python3 web.py
 ```
+
+4. Open `http://127.0.0.1:8000` in your browser.
 
 ## Usage
 
-```shell
-usage: generate.py [-h] [--model MODEL] [--lang LANG] [--api-key API_KEY] resume job_pdf
+1. Upload your resume PDF.
+2. Upload the job advertisement PDF.
+3. Choose the OpenRouter model and output language.
+4. Paste your OpenRouter API key.
+5. Submit the form to generate a cover letter.
 
-Generate cover letter using LLM
-
-positional arguments:
-  resume             Path to resume PDF file
-  job_pdf            Path to job advertisement PDF
-
-options:
-  -h, --help         show this help message and exit
-  --model MODEL      OpenRouter model name
-  --lang LANG        Language for cover letter
-  --api-key API_KEY  OpenRouter API key (or use OPENROUTER_API_KEY env var)
-```
+Each request uses the API key supplied in the form. Uploaded files must be valid PDFs and are limited to 5 MB each.
