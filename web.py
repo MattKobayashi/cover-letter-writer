@@ -17,7 +17,7 @@ BOOTSTRAP_STYLESHEET_INTEGRITY = (
     "sha512-fw7f+TcMjTb7bpbLJZlP8g2Y4XcCyFZW8uy8HsRZsH/SwbMw0plKHFHr99DN3l04"
     "VsYNwvzicUX/6qurvIxbxw=="
 )
-DEFAULT_MODEL = "openai/gpt-5.4-nano"
+DEFAULT_MODEL = "google/gemini-3.1-flash-lite-preview"
 DEFAULT_LANGUAGE = "English (Australia)"
 MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
 MAX_PROMPT_SOURCE_CHARS = 20_000
