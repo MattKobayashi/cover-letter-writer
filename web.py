@@ -280,6 +280,11 @@ async def generate_cover_letter_web(
         A webpage containing the generated cover letter.
     """
     try:
+        api_key_value = api_key.strip()
+        if not api_key_value:
+            logger.info("Invalid cover letter request: missing API key")
+            return render_error_page("Missing API key.", status_code=400)
+
         model_name = model.strip() or DEFAULT_MODEL
         language = lang.strip() or DEFAULT_LANGUAGE
 
@@ -303,7 +308,7 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
 
         cover_letter = await run_in_threadpool(
             generate_coverletter,
-            api_key,
+            api_key_value,
             model_name,
             prompt,
         )
@@ -331,7 +336,10 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
         )
     except ValueError as exc:
         logger.info("Invalid cover letter request: %s", exc)
-        return render_error_page(str(exc), status_code=400)
+        return render_error_page(
+            "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again.",
+            status_code=400,
+        )
     except RuntimeError:
         logger.exception("Cover letter generation failed")
         return render_error_page(

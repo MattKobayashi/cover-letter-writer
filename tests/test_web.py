@@ -1,7 +1,11 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from web import app, extract_pdf_text_bytes, generate_coverletter
+from web import (
+    app,
+    extract_pdf_text_bytes,
+    generate_coverletter,
+)
 
 client = TestClient(app)
 PDF_BYTES = b"%PDF-1.7 dummy pdf"
@@ -145,7 +149,39 @@ def test_generate_endpoint_rejects_non_pdf_upload() -> None:
     response = client.post("/generate", files=files, data=data)
 
     assert response.status_code == 400
-    assert "Resume must be uploaded as a PDF." in response.text
+    assert (
+        "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again."
+        in response.text
+    )
+
+
+def test_generate_endpoint_hides_validation_exception_details(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "web.extract_pdf_text",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ValueError("secret path: /srv/app/private.pdf")
+        ),
+    )
+
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert (
+        "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again."
+        in response.text
+    )
+    assert "secret path: /srv/app/private.pdf" not in response.text
 
 
 def test_generate_endpoint_error(monkeypatch: pytest.MonkeyPatch) -> None:
