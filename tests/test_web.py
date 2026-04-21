@@ -1,42 +1,61 @@
+import pytest
 from fastapi.testclient import TestClient
-from web import app, extract_pdf_text_bytes, generate_coverletter
+
+from web import (
+    app,
+    extract_pdf_text_bytes,
+    generate_coverletter,
+)
 
 client = TestClient(app)
+PDF_BYTES = b"%PDF-1.7 dummy pdf"
 
 
-# Dummy classes for PdfReader replacement in web.py.
 class DummyPage:
-    def extract_text(self):
-        return "Page content"
+    def __init__(self, content: str | None = "Page content") -> None:
+        self.content = content
+
+    def extract_text(self) -> str | None:
+        return self.content
 
 
 class DummyPdf:
-    pages = [DummyPage(), DummyPage()]
+    def __init__(self, *contents: str | None) -> None:
+        page_contents = contents or ("Page content", "Page content")
+        self.pages = [DummyPage(content) for content in page_contents]
 
 
-def test_extract_pdf_text_bytes(monkeypatch):
-    # Replace PdfReader in web.py to return dummy pages.
+def test_extract_pdf_text_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
-    result = extract_pdf_text_bytes(b"dummy bytes")
+    result = extract_pdf_text_bytes(PDF_BYTES)
     assert result == "Page content\nPage content"
 
 
-def test_get_form():
+def test_extract_pdf_text_bytes_handles_pages_without_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf(None))
+    result = extract_pdf_text_bytes(PDF_BYTES)
+    assert result == ""
+
+
+def test_get_form() -> None:
     response = client.get("/")
     assert response.status_code == 200
-    # Check that we see the HTML form and the submit button (with id="submitBtn").
     assert "<form" in response.text
     assert 'id="submitBtn"' in response.text
+    assert 'type="password"' in response.text
 
 
-def test_generate_coverletter(monkeypatch):
-    # Replace requests.post with a dummy function
+def test_generate_coverletter(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_post(*args, **kwargs):
         class MockResponse:
-            def raise_for_status(self):
-                pass
-            def json(self):
+            def raise_for_status(self) -> None:
+                return None
+
+            def json(self) -> dict[str, list[dict[str, dict[str, str]]]]:
                 return {"choices": [{"message": {"content": "Test Cover Letter"}}]}
+
         return MockResponse()
 
     monkeypatch.setattr("requests.post", mock_post)
@@ -45,46 +64,144 @@ def test_generate_coverletter(monkeypatch):
     assert result == "Test Cover Letter"
 
 
-def test_generate_endpoint(monkeypatch):
-    # To avoid a real API call, replace generate_coverletter in web.py with a dummy.
-    monkeypatch.setattr("web.generate_coverletter", lambda api_key, model, prompt: "Fake Cover Letter")
-    # Also replace PdfReader in extract_pdf_text_bytes.
+def test_generate_coverletter_requires_api_key() -> None:
+    with pytest.raises(ValueError, match="Missing API key"):
+        generate_coverletter("   ", "dummy-model", "dummy-prompt")
+
+
+def test_generate_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "web.generate_coverletter",
+        lambda api_key, model, prompt: "Fake Cover Letter",
+    )
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
 
     files = {
-        "resume": ("resume.pdf", b"dummy resume", "application/pdf"),
-        "job_pdf": ("job_pdf.pdf", b"dummy job", "application/pdf"),
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
     }
     data = {
         "model": "dummy-model",
         "lang": "dummy-lang",
-        "api_key": "dummy-api-key"
+        "api_key": "dummy-api-key",
     }
     response = client.post("/generate", files=files, data=data)
     assert response.status_code == 200
-    # Check that the returned page includes our dummy cover letter.
     assert "Fake Cover Letter" in response.text
 
 
-def test_generate_endpoint_error(monkeypatch):
-    # Make generate_coverletter raise an exception
+def test_generate_endpoint_escapes_cover_letter_html(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    malicious_text = "<img src=x onerror=window.__attack=true>"
+    monkeypatch.setattr(
+        "web.generate_coverletter",
+        lambda api_key, model, prompt: malicious_text,
+    )
+    monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
+
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 200
+    assert "&lt;img src=x onerror=window.__attack=true&gt;" in response.text
+    assert malicious_text not in response.text
+
+
+def test_generate_endpoint_rejects_blank_api_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
+
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "   ",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert "Missing API key." in response.text
+
+
+def test_generate_endpoint_rejects_non_pdf_upload() -> None:
+    files = {
+        "resume": ("resume.txt", b"not a pdf", "text/plain"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert (
+        "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again."
+        in response.text
+    )
+
+
+def test_generate_endpoint_hides_validation_exception_details(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "web.extract_pdf_text",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            ValueError("secret path: /srv/app/private.pdf")
+        ),
+    )
+
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert (
+        "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again."
+        in response.text
+    )
+    assert "secret path: /srv/app/private.pdf" not in response.text
+
+
+def test_generate_endpoint_error(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_generate_error(*args, **kwargs):
-        raise Exception()
+        raise RuntimeError("OpenRouter request failed.")
 
     monkeypatch.setattr("web.generate_coverletter", mock_generate_error)
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
 
     files = {
-        "resume": ("resume.pdf", b"dummy resume", "application/pdf"),
-        "job_pdf": ("job_pdf.pdf", b"dummy job", "application/pdf"),
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
     }
     data = {
         "model": "dummy-model",
         "lang": "dummy-lang",
-        "api_key": "dummy-api-key"
+        "api_key": "dummy-api-key",
     }
     response = client.post("/generate", files=files, data=data)
-    assert response.status_code == 200
-    # Check that the returned page includes our error message
-    assert "An error has occurred!" in response.text
+
+    assert response.status_code == 502
+    assert "Failed to generate the cover letter. Please try again." in response.text
     assert "Try Again" in response.text

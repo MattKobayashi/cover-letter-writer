@@ -27,13 +27,21 @@ FROM python:3.14.4-slim-trixie@sha256:538a18f1db92b4210a0b71aca2d14c156a96dedbe8
 # Install dependencies
 RUN apt-get update \
     && apt-get install --no-install-recommends --yes \
-    curl
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --system app \
+    && useradd --system --gid app --home-dir /app --shell /usr/sbin/nologin app
+
+WORKDIR /app
 
 # Copy the application from the builder
 COPY --from=builder --chown=app:app /app /app
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
+
+USER app:app
 
 # Run the FastAPI application by default
 CMD ["python3", "/app/web.py"]

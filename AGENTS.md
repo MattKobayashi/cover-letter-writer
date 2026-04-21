@@ -1,138 +1,49 @@
-# Agent Instructions for cover-letter-writer
+# Agent Instructions
 
-This document provides essential guidelines and technical references for AI agents (like yourself) operating within this repository. Adhering to these standards ensures consistency, maintainability, and reliability of the codebase.
+## Package Manager
 
----
+- Use `uv`.
+- Sync deps: `uv sync`
+- Run the app: `uv run python3 web.py`
+- Run all tests: `uv run pytest`
+- Run hooks: `uv run pre-commit run --all-files`
 
-## 1. Development Environment & Commands
+## File-Scoped Commands
 
-The project utilizes `uv` for ultra-fast Python dependency management and task execution.
+| Task                | Command                                                                        |
+| ------------------- | ------------------------------------------------------------------------------ |
+| Test file           | `uv run pytest tests/test_web.py`                                              |
+| Test case           | `uv run pytest tests/test_web.py::test_generate_endpoint`                      |
+| CI-equivalent tests | `uv run --dev python3 -m pytest -v tests/`                                     |
+| Docker build        | `docker build -t "cover-letter-writer:test" .`                                 |
+| Docker smoke test   | `docker compose -f tests/docker-compose.yaml up --build --detach --timeout 60` |
+| Docker cleanup      | `docker compose -f tests/docker-compose.yaml down --timeout 60`                |
+| Health check        | `docker inspect --format='{{.State.Health.Status}}' cover-letter-writer`       |
 
-### Environment Management
+## Structure
 
-- **Sync Environment**: `uv sync`
-  Ensures the local `.venv` matches the `uv.lock` file.
-- **Update Dependencies**: `uv lock --upgrade`
-  Updates all dependencies to their latest compatible versions.
-- **Run Scripts**: `uv run <script.py>`
-  Executes a script within the project's virtual environment.
+- `web.py` is the only app entrypoint; it contains FastAPI routes, inline HTML rendering, PDF extraction, and the OpenRouter call.
+- There is no separate CLI entrypoint.
+- CI and Docker use Python `3.14.4`; `pyproject.toml` allows `>=3.14,<3.15`.
 
-### Testing (Pytest)
+## Key Conventions
 
-Testing is handled by `pytest`. Mocking is frequently used to avoid real API calls.
+- Keep blocking work out of the async `/generate` route; follow the existing `run_in_threadpool(...)` pattern unless you convert the full stack to async.
+- Reuse `render_page()` / `render_error_page()` and the Bootstrap constants in `web.py` instead of duplicating full HTML documents.
+- Web requests must use the API key supplied in the form; do not restore server-side env fallback for `/generate`.
+- PDF uploads are validated server-side: `application/pdf`, `%PDF-` header, max `5 MB`, and extractable text required. Update `README.md` and tests if this behavior changes.
+- Escape generated cover-letter text before rendering it into HTML.
 
-- **Run All Tests**: `uv run pytest`
-- **Run Verbose**: `uv run pytest -v`
-- **Run Single File**: `uv run pytest tests/test_web.py`
-- **Run Single Test Case**: `uv run pytest tests/test_web.py::test_extract_pdf_text_bytes`
-- **CI Test Command**: `uv run --dev python3 -m pytest -v tests/`
+## Testing Notes
 
-### Linting & Formatting
+- Tests avoid real network and PDF parsing by monkeypatching `web.generate_coverletter` and `web.PdfReader`.
+- Container checks rely on `tests/docker-compose.yaml`, container name `cover-letter-writer`, and `/health` returning `ok`.
+- Pre-commit only enforces `gitleaks`, `end-of-file-fixer`, and `trailing-whitespace`.
 
-- **Pre-commit**: `uv run pre-commit run --all-files`
-  This project uses `pre-commit` to manage hooks like `gitleaks`, `trailing-whitespace`, and `end-of-file-fixer`.
-- **Standards**: Follow PEP 8. Use 4 spaces for indentation. Ensure every file ends with a single newline.
+## Commit Attribution
 
----
+If you create a commit, include:
 
-## 2. Code Style & Conventions
-
-### Python Specifics
-
-- **Version**: Target Python 3.14.2+.
-- **Naming**:
-  - Functions/Variables: `snake_case` (e.g., `generate_coverletter`).
-  - Classes: `PascalCase` (e.g., `DummyPdf`).
-  - Constants: `UPPER_SNAKE_CASE`.
-- **Type Hinting**: Mandatory for all function signatures. Use the `-> None` for functions that return nothing.
-  - _Example_: `def process_data(input_str: str) -> list[int]:`
-- **Docstrings**: Use Google-style docstrings. Include `Args`, `Returns`, and `Raises` sections where applicable.
-
-  ```python
-  def extract_text(file_bytes: bytes) -> str:
-      """Extracts text from PDF bytes.
-
-      Args:
-          file_bytes: The raw bytes of the PDF.
-
-      Returns:
-          The concatenated text from all pages.
-      """
-  ```
-
-### Imports
-
-Organize imports alphabetically in three distinct sections:
-
-1.  **Standard Library**: `os`, `io`, `json`, etc.
-2.  **Third-Party**: `fastapi`, `requests`, `pypdf`, etc.
-3.  **Local Application**: Any internal modules.
-
-### Error Handling
-
-- **External Calls**: Always wrap network requests (e.g., `requests.post`) in `try-except` blocks.
-- **Explicit Reraising**: When catching an exception to provide context, use `raise Exception("msg") from e`.
-- **Validation**: Check for essential environment variables or API keys early and raise `ValueError` if missing.
-
----
-
-## 3. Architecture & Frameworks
-
-### FastAPI (Web Layer)
-
-- **Routes**: Use `@app.get` and `@app.post`.
-- **Responses**:
-  - Use `HTMLResponse` for web pages.
-  - Use `PlainTextResponse` for simple status checks (e.g., `/health`).
-- **Form Handling**: Use `Form(...)` for string inputs and `File(...)` with `UploadFile` for PDF uploads.
-- **Templates**: Currently, HTML is embedded as strings within `web.py`. If the UI grows, consider moving to Jinja2 templates.
-
-### PDF Processing
-
-- Uses `pypdf.PdfReader` for text extraction.
-- PDF content is handled as `bytes` and processed in-memory using `io.BytesIO`.
-
-### LLM Integration
-
-- **Provider**: OpenRouter API.
-- **Model Default**: `google/gemini-3-flash-preview`.
-- **Timeout**: Set a reasonable timeout (e.g., 30s) for API requests to prevent hanging.
-
----
-
-## 4. Testing Strategy
-
-- **Mocking**: Use `monkeypatch` to replace real network calls (`requests.post`) and file system operations.
-- **Dummy Classes**: Create minimal dummy classes to simulate complex objects like `PdfReader` and its pages.
-- **Endpoint Tests**: Use `fastapi.testclient.TestClient` to verify HTTP status codes and response content (especially looking for specific HTML elements or text strings).
-
----
-
-## 5. Deployment (Docker)
-
-- **Dockerfile**: Uses a multi-stage build starting from `python:3.14.2-slim-trixie`.
-- **Security**: Copies `uv` binary from the official image to ensure reproducible environments.
-- **Healthcheck**: Implemented via `curl` against the `/health` endpoint.
-- **Startup**: The container runs `python3 /app/web.py` by default.
-
----
-
-## 6. AI Rules & Integration
-
-- **Cursor Rules**: No specific `.cursorrules` detected.
-- **Copilot Rules**: No specific `.github/copilot-instructions.md` detected.
-- **General Instruction**: Always read `web.py` before making changes to the core logic, as it contains both the backend API and the frontend UI logic.
-
----
-
-## 7. Operational Guidelines for Agents
-
-1. **Read First**: Before editing, use the `Read` tool on `web.py` and `pyproject.toml`.
-2. **Test Proactively**: After any logic change, run `uv run pytest`.
-3. **Verify UI**: If changing HTML strings in `web.py`, ensure the Bootstrap classes remain consistent (v5.3.7 is currently used).
-4. **Security**: NEVER commit or hardcode API keys. Always use environment variables or form inputs.
-5. **Documentation**: If you add a new endpoint or major helper function, update the docstrings and this `AGENTS.md` if necessary.
-
----
-
-_Created on 2026-01-29. This file is intended to be maintained by both humans and AI agents._
+```
+Co-Authored-By: OpenCode <noreply@example.com>
+```
