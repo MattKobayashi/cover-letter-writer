@@ -44,6 +44,6 @@
 
 If you create a commit, include:
 
-```
+```text
 Co-Authored-By: OpenCode <noreply@example.com>
 ```
