@@ -1,7 +1,9 @@
 import pytest
+import requests
 from fastapi.testclient import TestClient
 
 from web import (
+    OpenRouterError,
     app,
     extract_pdf_text_bytes,
     generate_coverletter,
@@ -67,6 +69,26 @@ def test_generate_coverletter(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_generate_coverletter_requires_api_key() -> None:
     with pytest.raises(ValueError, match="Missing API key"):
         generate_coverletter("   ", "dummy-model", "dummy-prompt")
+
+
+def test_generate_coverletter_preserves_http_status_code(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def mock_post(*args, **kwargs):
+        class MockResponse:
+            def raise_for_status(self) -> None:
+                error = requests.exceptions.HTTPError("unauthorized")
+                error.response = type("Response", (), {"status_code": 401})()
+                raise error
+
+        return MockResponse()
+
+    monkeypatch.setattr("requests.post", mock_post)
+
+    with pytest.raises(OpenRouterError) as excinfo:
+        generate_coverletter("dummy-key", "dummy-model", "dummy-prompt")
+
+    assert excinfo.value.status_code == 401
 
 
 def test_generate_endpoint(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -136,10 +158,61 @@ def test_generate_endpoint_rejects_blank_api_key(
     assert "Missing API key." in response.text
 
 
+def test_generate_endpoint_rejects_missing_api_key_field() -> None:
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert response.headers["content-type"].startswith("text/html")
+    assert "Missing API key." in response.text
+
+
+def test_generate_endpoint_rejects_missing_job_pdf_field() -> None:
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert response.headers["content-type"].startswith("text/html")
+    assert "Missing job advertisement PDF." in response.text
+
+
 def test_generate_endpoint_rejects_non_pdf_upload() -> None:
     files = {
         "resume": ("resume.txt", b"not a pdf", "text/plain"),
         "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert (
+        "The submitted files were invalid. Upload extractable PDF files up to 5 MB and try again."
+        in response.text
+    )
+
+
+def test_generate_endpoint_rejects_upload_without_pdf_content_type() -> None:
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES),
     }
     data = {
         "model": "dummy-model",
@@ -186,7 +259,7 @@ def test_generate_endpoint_hides_validation_exception_details(
 
 def test_generate_endpoint_error(monkeypatch: pytest.MonkeyPatch) -> None:
     def mock_generate_error(*args, **kwargs):
-        raise RuntimeError("OpenRouter request failed.")
+        raise OpenRouterError("OpenRouter request failed.", status_code=500)
 
     monkeypatch.setattr("web.generate_coverletter", mock_generate_error)
     monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
@@ -205,3 +278,30 @@ def test_generate_endpoint_error(monkeypatch: pytest.MonkeyPatch) -> None:
     assert response.status_code == 502
     assert "Failed to generate the cover letter. Please try again." in response.text
     assert "Try Again" in response.text
+
+
+def test_generate_endpoint_shows_invalid_api_key_error_from_openrouter(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def mock_generate_error(*args, **kwargs):
+        raise OpenRouterError("OpenRouter request failed.", status_code=401)
+
+    monkeypatch.setattr("web.generate_coverletter", mock_generate_error)
+    monkeypatch.setattr("web.PdfReader", lambda stream: DummyPdf())
+
+    files = {
+        "resume": ("resume.pdf", PDF_BYTES, "application/pdf"),
+        "job_pdf": ("job_pdf.pdf", PDF_BYTES, "application/pdf"),
+    }
+    data = {
+        "model": "dummy-model",
+        "lang": "dummy-lang",
+        "api_key": "dummy-api-key",
+    }
+    response = client.post("/generate", files=files, data=data)
+
+    assert response.status_code == 400
+    assert (
+        "OpenRouter rejected the API key. Check your API key and try again."
+        in response.text
+    )
