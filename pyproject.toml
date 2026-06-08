@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14, <3.15"
 dependencies = [
     "fastapi[standard]==0.136.3",
-    "pypdf==6.13.0",
+    "pypdf==6.13.1",
     "requests==2.34.2",
 ]
 
