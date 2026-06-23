@@ -121,7 +121,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = "==0.138.0" },
-    { name = "pypdf", specifier = "==6.14.0" },
+    { name = "pypdf", specifier = "==6.14.1" },
     { name = "requests", specifier = "==2.34.2" },
 ]
 
@@ -525,11 +525,11 @@ wheels = [
 
 [[package]]
 name = "pypdf"
-version = "6.14.0"
+version = "6.14.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e3/de/edd6908e6d81068f9a70c3164f391390bd8f89b96afeef917933b848a094/pypdf-6.14.0.tar.gz", hash = "sha256:cb3f797cc05e61fc6dd1e5735fd1b1bc2946112abc47f7184f68d5d72aa6a696", size = 6489606, upload-time = "2026-06-22T14:45:55.38Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/91/4c422e3b1a6f9fabbd7989cc4f8a84df5898ceac0862d4c9cfc1ab26c200/pypdf-6.14.1.tar.gz", hash = "sha256:03c76aa9cc6dfda76d33d8e19f17d271efb6a7606913a72cf973a649db9743a3", size = 6490965, upload-time = "2026-06-23T11:52:03.752Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/79/aec83d5dd98784a1afac704b38070609e1571b37a9111ec98f13051c4141/pypdf-6.14.0-py3-none-any.whl", hash = "sha256:48d4bf5c5352b06ecb2794c0fbe9e91ca6648c77e4be6734517dede9f31790e2", size = 348961, upload-time = "2026-06-22T14:45:53.179Z" },
+    { url = "https://files.pythonhosted.org/packages/df/b4/eedf61e574ef0034177d7861cd701b321c392ab36e1670f2aadbb60da7fc/pypdf-6.14.1-py3-none-any.whl", hash = "sha256:f12434c49fd4c771b92ea2cc176df16d6c5488fc123d4ab4ee3a344e151f685c", size = 349494, upload-time = "2026-06-23T11:52:01.661Z" },
 ]
 
 [[package]]
