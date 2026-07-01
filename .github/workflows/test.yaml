@@ -22,7 +22,11 @@ jobs:
         run: |
           set -eux
           pipx install uv
-          uv run --dev python3 -m pytest -v tests/
+          uv sync --dev
+          uv run ruff check web.py tests/
+          uv run ruff format --check web.py tests/
+          uv run mypy web.py
+          uv run python3 -m pytest -v tests/
   image:
     name: Image
     runs-on: ubuntu-24.04
@@ -52,8 +56,21 @@ jobs:
         run: |
           set -eux
           docker compose up --build --detach --timeout 60
-          sleep 60
-          docker inspect --format='{{.State.Health.Status}}' cover-letter-writer | grep -w 'healthy'
+          for attempt in $(seq 1 30); do
+            status="$(docker inspect --format='{{.State.Health.Status}}' cover-letter-writer)"
+            echo "Attempt ${attempt}: health status is ${status}"
+            if [ "${status}" = "healthy" ]; then
+              exit 0
+            fi
+            if [ "${status}" = "unhealthy" ]; then
+              docker logs cover-letter-writer
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Container did not become healthy in time"
+          docker logs cover-letter-writer
+          exit 1
         working-directory: tests
       # Stop and remove the test container image
       - name: Stop and remove container image

@@ -21,3 +21,5 @@ uv run python3 web.py
 5. Submit the form to generate a cover letter.
 
 Each request uses the API key supplied in the form. Uploaded files must be sent as `application/pdf`, include a valid `%PDF-` header, contain extractable text, and be 5 MB or smaller.
+
+The form is protected by a double-submit CSRF token, and the `/generate` endpoint is rate limited per client IP. Tune the limits with the `RATE_LIMIT_MAX_REQUESTS` (default `20`) and `RATE_LIMIT_WINDOW_SECONDS` (default `60`) environment variables.
