@@ -3,9 +3,13 @@ import asyncio
 import html
 import io
 import logging
+import os
+import secrets
+import time
+from collections import deque
 
 import requests
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from pypdf import PdfReader
 from starlette.concurrency import run_in_threadpool
@@ -23,6 +27,25 @@ MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024
 MAX_PROMPT_SOURCE_CHARS = 20_000
 PDF_HEADER = b"%PDF-"
 
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_FIELD_NAME = "csrf_token"
+CSRF_TOKEN_BYTES = 32
+
+CONTENT_SECURITY_POLICY = (
+    "default-src 'none'; "
+    f"style-src {BOOTSTRAP_STYLESHEET_URL}; "
+    "script-src 'unsafe-inline'; "
+    "connect-src 'self'; "
+    "form-action 'self'; "
+    "base-uri 'none'; "
+    "frame-ancestors 'none'"
+)
+
+# Fixed-window, per-client rate limiting for the /generate endpoint.
+RATE_LIMIT_MAX_REQUESTS = int(os.environ.get("RATE_LIMIT_MAX_REQUESTS", "20"))
+RATE_LIMIT_WINDOW_SECONDS = float(os.environ.get("RATE_LIMIT_WINDOW_SECONDS", "60"))
+_rate_limit_store: dict[str, deque[float]] = {}
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -34,6 +57,68 @@ class OpenRouterError(RuntimeError):
     def __init__(self, message: str, *, status_code: int | None = None) -> None:
         super().__init__(message)
         self.status_code = status_code
+
+
+class CSRFError(Exception):
+    """Raised when a request fails CSRF validation."""
+
+
+class RateLimitError(Exception):
+    """Raised when a client exceeds the allowed request rate."""
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Attach security headers to every response."""
+    response = await call_next(request)
+    response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    return response
+
+
+def generate_csrf_token() -> str:
+    """Return a new random CSRF token."""
+    return secrets.token_urlsafe(CSRF_TOKEN_BYTES)
+
+
+def validate_csrf(cookie_token: str | None, form_token: str | None) -> None:
+    """Validate a double-submit CSRF token pair.
+
+    Args:
+        cookie_token: Token value from the CSRF cookie.
+        form_token: Token value submitted in the form body.
+
+    Raises:
+        CSRFError: If either token is missing or they do not match.
+    """
+    if not cookie_token or not form_token:
+        raise CSRFError("Missing CSRF token.")
+    if not secrets.compare_digest(cookie_token, form_token):
+        raise CSRFError("CSRF token mismatch.")
+
+
+def check_rate_limit(client_id: str) -> None:
+    """Enforce a fixed-window request rate limit per client.
+
+    Args:
+        client_id: Identifier for the calling client (typically its IP).
+
+    Raises:
+        RateLimitError: If the client has exceeded the allowed request rate.
+    """
+    now = time.monotonic()
+    window_start = now - RATE_LIMIT_WINDOW_SECONDS
+    timestamps = _rate_limit_store.setdefault(client_id, deque())
+
+    while timestamps and timestamps[0] <= window_start:
+        timestamps.popleft()
+
+    if len(timestamps) >= RATE_LIMIT_MAX_REQUESTS:
+        raise RateLimitError("Too many requests.")
+
+    timestamps.append(now)
 
 
 @app.get("/health", response_class=PlainTextResponse, include_in_schema=False)
@@ -229,7 +314,7 @@ def extract_pdf_text(file_bytes: bytes, label: str) -> str:
     return normalized_text[:MAX_PROMPT_SOURCE_CHARS]
 
 
-async def read_uploaded_pdf(upload: UploadFile, label: str) -> bytes:
+async def validate_and_read_pdf(upload: UploadFile, label: str) -> bytes:
     """Read, size-check, and validate an uploaded PDF.
 
     Args:
@@ -262,11 +347,13 @@ def read_form() -> HTMLResponse:
     Returns:
         A webpage with the cover letter generation form.
     """
-    return render_page(
+    csrf_token = generate_csrf_token()
+    response = render_page(
         "Generate Cover Letter",
         f"""
         <h1>Generate Cover Letter</h1>
         <form action="/generate" method="post" enctype="multipart/form-data" id="coverLetterForm">
+            <input type="hidden" name="{CSRF_FIELD_NAME}" value="{html.escape(csrf_token, quote=True)}">
             <div class="mb-3">
                 <label for="resume" class="form-label">Resume (PDF)</label>
                 <input type="file" class="form-control" id="resume" name="resume" accept="application/pdf" required>
@@ -298,29 +385,46 @@ def read_form() -> HTMLResponse:
         </script>
         """,
     )
+    response.set_cookie(
+        CSRF_COOKIE_NAME,
+        csrf_token,
+        max_age=3600,
+        httponly=True,
+        samesite="strict",
+    )
+    return response
 
 
 @app.post("/generate", response_class=HTMLResponse)
 async def generate_cover_letter_web(
+    request: Request,
     resume: UploadFile | None = File(default=None),
     job_pdf: UploadFile | None = File(default=None),
     model: str = Form(DEFAULT_MODEL),
     lang: str = Form(DEFAULT_LANGUAGE),
     api_key: str | None = Form(default=None),
+    csrf_token: str | None = Form(default=None),
 ) -> HTMLResponse:
     """Generate a cover letter from uploaded resume and job description PDFs.
 
     Args:
+        request: The incoming request, used for CSRF and rate-limit checks.
         resume: The user's resume in PDF format.
         job_pdf: The job description in PDF format.
         model: The AI model to use for generation.
         lang: The language to use for the cover letter.
         api_key: The OpenRouter API key for authentication.
+        csrf_token: The double-submit CSRF token from the form body.
 
     Returns:
         A webpage containing the generated cover letter.
     """
     try:
+        client_id = request.client.host if request.client else "unknown"
+        check_rate_limit(client_id)
+
+        validate_csrf(request.cookies.get(CSRF_COOKIE_NAME), csrf_token)
+
         if resume is None:
             logger.info("Invalid cover letter request: missing resume")
             return render_error_page("Missing resume PDF.", status_code=400)
@@ -338,8 +442,8 @@ async def generate_cover_letter_web(
         language = lang.strip() or DEFAULT_LANGUAGE
 
         resume_bytes, job_bytes = await asyncio.gather(
-            read_uploaded_pdf(resume, "Resume"),
-            read_uploaded_pdf(job_pdf, "Job advertisement"),
+            validate_and_read_pdf(resume, "Resume"),
+            validate_and_read_pdf(job_pdf, "Job advertisement"),
         )
 
         resume_text, job_text = await asyncio.gather(
@@ -383,6 +487,19 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
             </script>
             """,
         )
+    except RateLimitError:
+        logger.info("Rate limited cover letter request")
+        return render_error_page(
+            "Too many requests. Wait a moment and try again.",
+            status_code=429,
+        )
+    except CSRFError as exc:
+        logger.info("CSRF validation failed: %s", exc)
+        return render_error_page(
+            "Your session expired or the request could not be verified. "
+            "Reload the page and try again.",
+            status_code=403,
+        )
     except ValueError as exc:
         logger.info("Invalid cover letter request: %s", exc)
         return render_error_page(
@@ -399,14 +516,6 @@ Focus on matching key skills and experience. Use professional tone. Write in {la
                 exc.status_code if exc.status_code is not None else "unknown",
             )
         return render_error_page(message, status_code=status_code)
-    except RuntimeError:
-        logger.exception(
-            "Cover letter generation failed before receiving an OpenRouter response"
-        )
-        return render_error_page(
-            "Failed to generate the cover letter. Please try again.",
-            status_code=502,
-        )
     except Exception:
         logger.exception("Unexpected error while generating cover letter")
         return render_error_page(
