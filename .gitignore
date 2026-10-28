@@ -1,8 +1,9 @@
 .aider*
 .DS_Store
 .gitignore
-__pycache__/
-.pytest_cache/
+__pycache__
+.pytest_cache
 .idea
 .venv/
-.ruff_cache/
+.ruff_cache
+.mypy_cache
