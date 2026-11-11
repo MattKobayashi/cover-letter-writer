@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.15](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.6.14...v1.6.15) (2026-11-10)
+
+
+### Bug Fixes
+
+* **deps:** update dependency fastapi to v0.162.4 ([#609](https://github.com/MattKobayashi/cover-letter-writer/issues/609)) ([d20652d](https://github.com/MattKobayashi/cover-letter-writer/commit/d20652d16bc4e757e2e3e8fddcbc00d7a970bc30))
+* **deps:** update dependency pypdf to v7.0.1 ([#607](https://github.com/MattKobayashi/cover-letter-writer/issues/607)) ([df36b52](https://github.com/MattKobayashi/cover-letter-writer/commit/df36b523dcddc9fc9a6afa0c0342933b723ff4a1))
+
 ## [1.6.14](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.6.13...v1.6.14) (2026-11-07)
 
 
