@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.21](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.6.20...v1.6.21) (2026-11-26)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pypdf to v7.2.0 ([#633](https://github.com/MattKobayashi/cover-letter-writer/issues/633)) ([94217d5](https://github.com/MattKobayashi/cover-letter-writer/commit/94217d57a180d7117bbee1fa957d23a117145ffc))
+
 ## [1.6.20](https://github.com/MattKobayashi/cover-letter-writer/compare/v1.6.19...v1.6.20) (2026-11-20)
 
 
